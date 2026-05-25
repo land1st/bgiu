@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>BGIU</title>
+<link rel="icon" type="image/png" href="https://land1st.github.io/bgiu/icon-A-1024.png">
+<link rel="apple-touch-icon" href="https://land1st.github.io/bgiu/icon-A-1024.png">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -1040,7 +1042,183 @@ window.addEventListener('load',()=>{
   setTimeout(()=>{if(window.google&&window.google.accounts)initGIS();},500);
 });
 
-applyTheme();render();
+
+// ===== ONBOARDING =====
+const ICON_URL='https://land1st.github.io/bgiu/icon-A-1024.png';
+
+function isFirstVisit(){return !localStorage.getItem('bgiu_onboarded');}
+function markOnboarded(){localStorage.setItem('bgiu_onboarded','1');}
+
+const SLIDES=[
+  {
+    tag:'\uc2dc\uc791\ud558\uae30',
+    title:'\ucd9c\ud1f4\uadfc\uae38,\n\uc9e7\uace0 \uae4a\uac8c.',
+    desc:'\ud558\ub8e8 \ud55c \uc720\ub2db\uc529, \uc601\ubb38\ubc95\uc744 \uac00\ubcf5\uac8c \uc775\ud600\uc694.\nBasic Grammar In Use\uc758 \ud575\uc2ec\uc744 \ub0b4 \uc190 \uc548\uc5d0.',
+    illus:'book',
+  },
+  {
+    tag:'\uc790\uc720\ub85c\uc6b4 \uc720\ub2db',
+    title:'\ub0b4\uac00 \ub9cc\ub4dc\ub294\n\ud559\uc2b5 \uce74\ub4dc',
+    desc:'\uc720\ub2db \uc81c\ubaa9, \ud575\uc2ec \uc694\uc57d, \uc608\ubb38\uc744 \uc790\uc720\ub86d\uac8c \ucd94\uac00\ud558\uace0 \ud3b8\uc9d1\ud558\uc138\uc694.\n\ub0b4 \ud398\uc774\uc2a4\uc5d0 \ub531 \ub9de\ub294 \ud559\uc2b5.',
+    illus:'card',
+  },
+  {
+    tag:'\uc790\uac00 \ucc44\uc810 \ubcf5\uc2b5',
+    title:'\ud55c\uad6d\uc5b4 \ubcf4\uace0\n\uc601\uc5b4\ub85c \uc625\uaca8\ubcf4\uae30',
+    desc:'\uc608\ubb38\uc774 \ub79c\ub364\uc73c\ub85c \ucd9c\uc81c\ub3fc\uc694. \uc815\ub2f5\uc744 \ud655\uc778\ud558\uace0,\n\uc2a4\uc2a4\ub85c \ub9de\uace0 \ud2c0\ub9bc\uc744 \uccb4\ud06c\ud558\uba70 \uae30\uc5b5\uc744 \ub2e4\uc838\uc694.',
+    illus:'chat',
+  },
+];
+
+function mkIllus(type,a){
+  const wrap=d({width:'200px',height:'200px',borderRadius:'50%',background:a+'22',
+    display:'flex',alignItems:'center',justifyContent:'center',position:'relative',margin:'0 auto'});
+  if(type==='book'){
+    // Book illustration with Aa icon image
+    wrap.innerHTML=`
+      <div style="width:130px;height:100px;position:relative">
+        <div style="position:absolute;left:0;top:10px;width:58px;height:80px;background:#fff;border-radius:4px 0 0 4px;box-shadow:2px 2px 8px rgba(0,0,0,.10)">
+          <div style="margin:12px 8px;height:6px;border-radius:3px;background:${a}33"></div>
+          <div style="margin:6px 8px;height:4px;border-radius:2px;background:${a}22"></div>
+          <div style="margin:6px 8px;height:4px;border-radius:2px;background:${a}22"></div>
+        </div>
+        <div style="position:absolute;right:0;top:10px;width:58px;height:80px;background:#fff;border-radius:0 4px 4px 0;box-shadow:2px 2px 8px rgba(0,0,0,.10)">
+          <div style="margin:12px 8px;height:6px;border-radius:3px;background:#ddd"></div>
+          <div style="margin:6px 8px;height:4px;border-radius:2px;background:#eee"></div>
+          <div style="margin:6px 8px;height:4px;border-radius:2px;background:#eee"></div>
+        </div>
+        <div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);width:44px;height:44px;border-radius:12px;background:${a};display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px ${a}66">
+          <img src="${ICON_URL}" style="width:36px;height:36px;border-radius:8px">
+        </div>
+      </div>
+      <div style="position:absolute;top:28px;left:20px;font-size:16px">⭐</div>
+      <div style="position:absolute;top:24px;right:22px;font-size:14px">⭐</div>
+      <div style="position:absolute;bottom:32px;right:28px;font-size:12px">⭐</div>`;
+  }else if(type==='card'){
+    wrap.innerHTML=`
+      <div style="width:140px;height:96px;background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.10);padding:16px;position:relative">
+        <div style="width:60px;height:10px;border-radius:5px;background:${a};margin-bottom:12px"></div>
+        <div style="width:100%;height:7px;border-radius:4px;background:#e5e5ea;margin-bottom:7px"></div>
+        <div style="width:80%;height:7px;border-radius:4px;background:#e5e5ea"></div>
+        <div style="position:absolute;top:-14px;right:-14px;width:32px;height:32px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(52,199,89,.4)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+        </div>
+      </div>
+      <div style="position:absolute;top:40px;left:22px;width:8px;height:8px;border-radius:50%;background:${a}66"></div>
+      <div style="position:absolute;bottom:44px;right:24px;width:6px;height:6px;border-radius:50%;background:${a}44"></div>`;
+  }else if(type==='chat'){
+    wrap.innerHTML=`
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
+        <div style="background:#fff;border-radius:16px 16px 16px 4px;padding:10px 18px;font-size:14px;font-weight:600;color:var(--t1);box-shadow:0 2px 10px rgba(0,0,0,.10)">
+          \ub098\ub294 \uacf5\ubd80\ud55c\ub2e4
+        </div>
+        <div style="width:28px;height:28px;border-radius:50%;background:${a};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px ${a}55">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19,12 12,19 5,12"/></svg>
+        </div>
+        <div style="background:${a};border-radius:4px 16px 16px 16px;padding:10px 18px;font-size:14px;font-weight:700;color:#fff;box-shadow:0 2px 10px ${a}55">
+          I study.
+        </div>
+      </div>`;
+  }
+  return wrap;
+}
+
+function scrOnboarding(){
+  const a=ac();
+  let curIdx=0;
+  const outer=d({position:'fixed',inset:'0',background:'var(--bg1)',zIndex:'1000',display:'flex',flexDirection:'column',maxWidth:'430px',margin:'0 auto'});
+
+  // Skip button
+  const skipBtn=d({position:'absolute',top:'20px',right:'20px',fontSize:'15px',color:'var(--t2)',cursor:'pointer',zIndex:'10',padding:'8px'});
+  skipBtn.textContent='\uac74\ub108\ub6f0\uae30';
+  tap(skipBtn,()=>{markOnboarded();outer.remove();render();});
+  outer.appendChild(skipBtn);
+
+  // Slides container
+  const slidesWrap=d({flex:'1',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'20px 32px 0',textAlign:'center'});
+
+  // Illus area
+  const illusArea=d({marginBottom:'40px',width:'100%',display:'flex',justifyContent:'center'});
+
+  // Text area
+  const tagEl=d({fontSize:'13px',fontWeight:'600',color:a,letterSpacing:'0.4px',marginBottom:'10px'});
+  const titleEl=d({fontSize:'32px',fontWeight:'800',letterSpacing:'-0.8px',lineHeight:'1.2',marginBottom:'14px',whiteSpace:'pre-line'});
+  const descEl=d({fontSize:'15px',color:'var(--t2)',lineHeight:'1.65',whiteSpace:'pre-line'});
+
+  slidesWrap.append(illusArea,tagEl,titleEl,descEl);
+  outer.appendChild(slidesWrap);
+
+  // Dots + button area
+  const bottom=d({padding:'20px 24px',paddingBottom:'env(safe-area-inset-bottom, 28px)',display:'flex',flexDirection:'column',alignItems:'center',gap:'20px'});
+
+  const dotsWrap=d({display:'flex',gap:'8px',alignItems:'center'});
+  SLIDES.forEach((_,i)=>{
+    const dot=d({width:i===0?'20px':'8px',height:'8px',borderRadius:'999px',
+      background:i===0?a:'var(--bg4)',transition:'all 0.3s'});
+    dotsWrap.appendChild(dot);
+  });
+
+  const nextBtn=d({width:'100%',padding:'16px',borderRadius:'14px',background:a,
+    color:'#fff',fontSize:'17px',fontWeight:'700',textAlign:'center',cursor:'pointer',
+    letterSpacing:'-0.3px',transition:'transform 0.12s',boxShadow:'0 4px 16px '+a+'55'});
+  nextBtn.textContent='\ub2e4\uc74c';
+  tap(nextBtn,()=>{
+    if(curIdx<SLIDES.length-1){curIdx++;updateSlide();}
+    else{markOnboarded();outer.remove();render();}
+  });
+
+  bottom.append(dotsWrap,nextBtn);outer.appendChild(bottom);
+
+  function updateSlide(){
+    const sl=SLIDES[curIdx];
+    // Update illus
+    illusArea.innerHTML='';
+    illusArea.appendChild(mkIllus(sl.illus,a));
+    // Update text
+    tagEl.textContent=sl.tag;tagEl.style.color=a;
+    titleEl.textContent=sl.title;
+    descEl.textContent=sl.desc;
+    // Update dots
+    Array.from(dotsWrap.children).forEach((dot,i)=>{
+      dot.style.background=i===curIdx?a:'var(--bg4)';
+      dot.style.width=i===curIdx?'20px':'8px';
+    });
+    // Update button
+    nextBtn.textContent=curIdx===SLIDES.length-1?'\uc2dc\uc791\ud558\uae30':'\ub2e4\uc74c';
+    // Animate slide in
+    slidesWrap.style.opacity='0';slidesWrap.style.transform='translateX(30px)';
+    requestAnimationFrame(()=>{
+      slidesWrap.style.transition='opacity 0.3s, transform 0.3s';
+      slidesWrap.style.opacity='1';slidesWrap.style.transform='translateX(0)';
+    });
+  }
+
+  // Touch swipe support
+  let touchStartX=0;
+  outer.addEventListener('touchstart',e=>touchStartX=e.touches[0].clientX,{passive:true});
+  outer.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-touchStartX;
+    if(dx<-50&&curIdx<SLIDES.length-1){curIdx++;updateSlide();}
+    else if(dx>50&&curIdx>0){curIdx--;updateSlide();}
+  });
+
+  updateSlide();
+  return outer;
+}
+
+// Show onboarding or main app
+function boot(){
+  applyTheme();
+  if(isFirstVisit()){
+    const app=document.getElementById('A');
+    app.innerHTML='';
+    const ob=scrOnboarding();
+    // Center wrapper
+    const wrap=d({height:'100%',display:'flex',flexDirection:'column',position:'relative',maxWidth:'430px',margin:'0 auto',background:'var(--bg1)',overflow:'hidden'});
+    wrap.appendChild(ob);app.appendChild(wrap);
+  }else{render();}
+}
+boot();
 </script>
 </body>
 </html>

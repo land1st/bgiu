@@ -3,1366 +3,1044 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>BGIU — 베이직 그래마 인 유즈</title>
-<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<title>BGIU</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --accent: #00C7BE;
-  --accent-dark: #63E6E2;
-  --bg1: #F2F2F7;
-  --bg2: #FFFFFF;
-  --bg3: #E5E5EA;
-  --bg4: #D1D1D6;
-  --text1: #000000;
-  --text2: rgba(60,60,67,0.60);
-  --text3: rgba(60,60,67,0.30);
-  --sep: rgba(60,60,67,0.12);
-  --green: #34C759;
-  --red: #FF3B30;
-  --yellow: #FFCC00;
-  --bar-bg: rgba(248,248,250,0.82);
-  --shadow-today: 0 8px 24px rgba(0,199,190,0.40);
-  --radius-card: 14px;
-  --radius-lg: 18px;
-  --radius-btn: 12px;
-  --transition: 0.12s cubic-bezier(.3,.7,.4,1);
-  --sheet-transition: 0.28s cubic-bezier(.32,.72,.32,1);
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ac:#00C7BE;--bg1:#F2F2F7;--bg2:#fff;--bg3:#E5E5EA;--bg4:#D1D1D6;
+  --t1:#000;--t2:rgba(60,60,67,.6);--t3:rgba(60,60,67,.3);
+  --sep:rgba(60,60,67,.12);--green:#34C759;--red:#FF3B30;--yellow:#FFCC00;
+  --bar:rgba(248,248,250,.88);
 }
-[data-dark="true"] {
-  --bg1: #000000;
-  --bg2: #1C1C1E;
-  --bg3: #2C2C2E;
-  --bg4: #3A3A3C;
-  --text1: #FFFFFF;
-  --text2: rgba(235,235,245,0.60);
-  --text3: rgba(235,235,245,0.30);
-  --sep: rgba(84,84,88,0.65);
-  --bar-bg: rgba(28,28,30,0.78);
-}
-html, body, #root {
-  height: 100%;
-  width: 100%;
-  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
-  background: var(--bg1);
-  color: var(--text1);
-  -webkit-font-smoothing: antialiased;
-  overflow: hidden;
-}
-/* Scrollable areas */
-.scroll-area {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-.scroll-area::-webkit-scrollbar { display: none; }
-/* Tap animation */
-.tap { transition: transform var(--transition); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.tap:active { transform: scale(0.97); }
-button { border: none; background: none; font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-input, textarea { font-family: inherit; outline: none; border: none; background: none; }
-textarea { resize: none; }
+.dk{--bg1:#000;--bg2:#1C1C1E;--bg3:#2C2C2E;--bg4:#3A3A3C;--t1:#fff;
+  --t2:rgba(235,235,245,.6);--t3:rgba(235,235,245,.3);--sep:rgba(84,84,88,.65);--bar:rgba(28,28,30,.88);}
+html,body,#A{height:100%;width:100%;font-family:'Pretendard Variable','Pretendard',-apple-system,sans-serif;
+  background:var(--bg1);color:var(--t1);-webkit-font-smoothing:antialiased;overflow:hidden}
+.sc{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.sc::-webkit-scrollbar{display:none}
+.tap{cursor:pointer;-webkit-tap-highlight-color:transparent}
+input,textarea{font-family:inherit;outline:none;border:none;background:none;color:var(--t1)}
+textarea{resize:none}
+button{border:none;background:none;font-family:inherit;cursor:pointer}
+.sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
 </style>
 </head>
-<body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect, useRef, useCallback, useMemo } = React;
+<body><div id="A"></div>
+<script>
+const CLIENT_ID='368952825871-d1fkqher8dbahab0nsmh13t2btbqs3nd.apps.googleusercontent.com';
+const DRIVE_FILE_NAME='bgiu_data.json';
+const SCOPES='https://www.googleapis.com/auth/drive.appdata';
 
-// ─── ACCENT COLORS ───────────────────────────────────────────────
-const ACCENTS = {
-  mint:   { light: '#00C7BE', dark: '#63E6E2', name: '민트' },
-  blue:   { light: '#007AFF', dark: '#0A84FF', name: '블루' },
-  indigo: { light: '#5856D6', dark: '#5E5CE6', name: '인디고' },
-  purple: { light: '#AF52DE', dark: '#BF5AF2', name: '퍼플' },
-  pink:   { light: '#FF2D55', dark: '#FF375F', name: '핑크' },
-  orange: { light: '#FF9500', dark: '#FF9F0A', name: '오렌지' },
+// ===== ACCENTS =====
+const AC={
+  mint:{l:'#00C7BE',d:'#63E6E2',n:'\ubbfc\ud2b8'},
+  blue:{l:'#007AFF',d:'#0A84FF',n:'\ube14\ub8e8'},
+  indigo:{l:'#5856D6',d:'#5E5CE6',n:'\uc778\ub514\uace0'},
+  purple:{l:'#AF52DE',d:'#BF5AF2',n:'\ud37c\ud50c'},
+  pink:{l:'#FF2D55',d:'#FF375F',n:'\ud551\ud06c'},
+  orange:{l:'#FF9500',d:'#FF9F0A',n:'\uc624\ub80c\uc9c0'},
 };
+function ac(){return AC[S.settings.accent][S.settings.dark?'d':'l'];}
 
-// ─── SAMPLE DATA ─────────────────────────────────────────────────
-const SAMPLE_UNITS = [
-  { id: 'u_1', title: 'Present Simple', subtitle: '현재 단순시제', summary: '반복적인 행동이나 일반적인 사실을 표현할 때 사용한다. 주어가 3인칭 단수일 때 동사에 -s/-es를 붙인다.', examples: [{ en: 'She works at a hospital.', ko: '그녀는 병원에서 일한다.' }, { en: 'I drink coffee every morning.', ko: '나는 매일 아침 커피를 마신다.' }, { en: 'The sun rises in the east.', ko: '태양은 동쪽에서 뜬다.' }, { en: 'Do you speak English?', ko: '영어를 하시나요?' }, { en: 'He doesn\'t like spicy food.', ko: '그는 매운 음식을 좋아하지 않는다.' }], completed: true, createdAt: Date.now() - 7 * 86400000 },
-  { id: 'u_2', title: 'Present Continuous', subtitle: '현재 진행형', summary: '지금 이 순간 진행 중인 동작을 표현한다. be동사(am/is/are) + 동사-ing 형태로 쓴다.', examples: [{ en: 'I am studying English now.', ko: '나는 지금 영어를 공부하고 있다.' }, { en: 'She is cooking dinner.', ko: '그녀는 저녁을 요리하고 있다.' }, { en: 'They are playing soccer.', ko: '그들은 축구를 하고 있다.' }, { en: 'Is it raining outside?', ko: '밖에 비가 오고 있나요?' }], completed: true, createdAt: Date.now() - 6 * 86400000 },
-  { id: 'u_3', title: 'Past Simple', subtitle: '과거 단순시제', summary: '과거의 완료된 동작이나 상태를 표현한다. 규칙 동사는 -ed를 붙이고, 불규칙 동사는 형태가 변한다.', examples: [{ en: 'I visited my grandmother last week.', ko: '나는 지난주에 할머니를 방문했다.' }, { en: 'She went to Paris last year.', ko: '그녀는 작년에 파리에 갔다.' }, { en: 'Did you watch the game?', ko: '경기를 봤나요?' }, { en: 'He didn\'t come to the party.', ko: '그는 파티에 오지 않았다.' }], completed: true, createdAt: Date.now() - 5 * 86400000 },
-  { id: 'u_4', title: 'Past Continuous', subtitle: '과거 진행형', summary: '과거의 특정 시점에 진행 중이던 일을 말할 때 사용한다. was/were + -ing 형태.', examples: [{ en: 'I was sleeping at 11 last night.', ko: '나는 어젯밤 11시에 자고 있었다.' }, { en: 'She was cooking when I called her.', ko: '내가 전화했을 때 그녀는 요리하고 있었다.' }, { en: 'They were waiting for the bus.', ko: '그들은 버스를 기다리고 있었다.' }], completed: false, createdAt: Date.now() - 4 * 86400000 },
-  { id: 'u_5', title: 'Present Perfect', subtitle: '현재 완료', summary: '과거에 시작된 일이 현재까지 영향을 미칠 때 사용한다. have/has + 과거분사 형태.', examples: [{ en: 'I have never been to London.', ko: '나는 런던에 가본 적이 없다.' }, { en: 'She has just finished her homework.', ko: '그녀는 방금 숙제를 마쳤다.' }, { en: 'Have you eaten lunch yet?', ko: '점심을 아직 먹지 않았나요?' }, { en: 'He has lived here for 10 years.', ko: '그는 10년 동안 여기 살았다.' }], completed: false, createdAt: Date.now() - 3 * 86400000 },
-  { id: 'u_6', title: 'Future with will', subtitle: '미래 시제 (will)', summary: '미래의 의지나 예측을 표현할 때 will을 사용한다. will + 동사원형 형태.', examples: [{ en: 'I will call you tomorrow.', ko: '내일 전화할게요.' }, { en: 'It will rain this afternoon.', ko: '오늘 오후에 비가 올 것이다.' }, { en: 'Will you help me with this?', ko: '이것 좀 도와주시겠어요?' }], completed: false, createdAt: Date.now() - 2 * 86400000 },
-  { id: 'u_7', title: 'Can / Could', subtitle: '조동사 can과 could', summary: '능력, 가능성, 허가를 표현할 때 사용한다. can은 현재, could는 과거 또는 더 공손한 표현.', examples: [{ en: 'I can swim very well.', ko: '나는 수영을 아주 잘 할 수 있다.' }, { en: 'Could you open the window?', ko: '창문을 열어주시겠어요?' }, { en: 'She couldn\'t come yesterday.', ko: '그녀는 어제 올 수 없었다.' }, { en: 'Can I use your phone?', ko: '전화기를 써도 될까요?' }], completed: false, createdAt: Date.now() - 86400000 },
-  { id: 'u_8', title: 'Articles: a / an / the', subtitle: '관사: a, an, the', summary: '부정관사(a/an)는 처음 언급하거나 불특정한 것에, 정관사(the)는 이미 알고 있거나 특정한 것에 사용한다.', examples: [{ en: 'I saw a dog in the park.', ko: '나는 공원에서 개 한 마리를 봤다.' }, { en: 'She is an engineer.', ko: '그녀는 엔지니어다.' }, { en: 'The book on the table is mine.', ko: '테이블 위의 책은 내 것이다.' }, { en: 'I don\'t have a car.', ko: '나는 차가 없다.' }], completed: false, createdAt: Date.now() },
+// ===== SAMPLE DATA =====
+const SAMP=[
+  {id:'u1',title:'Present Simple',subtitle:'\ud604\uc7ac \ub2e8\uc21c\uc2dc\uc81c',summary:'\ubc18\ubcf5\uc801\uc778 \ud589\ub3d9\uc774\ub098 \uc77c\ubc18\uc801\uc778 \uc0ac\uc2e4\uc744 \ud45c\ud604\ud560 \ub54c \uc0ac\uc6a9\ud55c\ub2e4. \uc8fc\uc5b4\uac00 3\uc778\uce6d \ub2e8\uc218\uc77c \ub54c \ub3d9\uc0ac\uc5d0 -s/-es\ub97c \ubd99\uc778\ub2e4.',
+   examples:[{en:'She works at a hospital.',ko:'\uadf8\ub140\ub294 \ubcd1\uc6d0\uc5d0\uc11c \uc77c\ud55c\ub2e4.'},{en:'I drink coffee every morning.',ko:'\ub098\ub294 \ub9e4\uc77c \uc544\uce68 \ucee4\ud53c\ub97c \ub9c8\uc2e0\ub2e4.'},{en:'The sun rises in the east.',ko:'\ud0dc\uc591\uc740 \ub3d9\ucabd\uc5d0\uc11c \ub220\ub2e4.'},{en:'Do you speak English?',ko:'\uc601\uc5b4\ub97c \ud558\uc2dc\ub098\uc694?'},{en:"He doesn't like spicy food.",ko:'\uadf8\ub294 \ub9e4\uc6b4 \uc74c\uc2dd\uc744 \uc88b\uc544\ud558\uc9c0 \uc54a\ub294\ub2e4.'}],
+   completed:true,createdAt:Date.now()-7*864e5},
+  {id:'u2',title:'Present Continuous',subtitle:'\ud604\uc7ac \uc9c4\ud589\ud615',summary:'\uc9c0\uae08 \uc774 \uc21c\uac04 \uc9c4\ud589 \uc911\uc778 \ub3d9\uc791\uc744 \ud45c\ud604\ud55c\ub2e4. be\ub3d9\uc0ac(am/is/are) + \ub3d9\uc0ac-ing \ud615\ud0dc\ub85c \uc4f4\ub2e4.',
+   examples:[{en:'I am studying English now.',ko:'\ub098\ub294 \uc9c0\uae08 \uc601\uc5b4\ub97c \uacf5\ubd80\ud558\uace0 \uc788\ub2e4.'},{en:'She is cooking dinner.',ko:'\uadf8\ub140\ub294 \uc800\ub140\ub97c \uc694\ub9ac\ud558\uace0 \uc788\ub2e4.'},{en:'They are playing soccer.',ko:'\uadf8\ub4e4\uc740 \ucd95\uad6c\ub97c \ud558\uace0 \uc788\ub2e4.'},{en:'Is it raining outside?',ko:'\ubc16\uc5d0 \ube44\uac00 \uc624\uace0 \uc788\ub098\uc694?'}],
+   completed:true,createdAt:Date.now()-6*864e5},
+  {id:'u3',title:'Past Simple',subtitle:'\uacfc\uac70 \ub2e8\uc21c\uc2dc\uc81c',summary:'\uacfc\uac70\uc758 \uc644\ub8cc\ub41c \ub3d9\uc791\uc774\ub098 \uc0c1\ud0dc\ub97c \ud45c\ud604\ud55c\ub2e4. \uaddc\uce59 \ub3d9\uc0ac\ub294 -ed\ub97c \ubd99\uc774\uace0, \ubd88\uaddc\uce59 \ub3d9\uc0ac\ub294 \ud615\ud0dc\uac00 \ubcc0\ud55c\ub2e4.',
+   examples:[{en:'I visited my grandmother last week.',ko:'\ub098\ub294 \uc9c0\ub09c\uc8fc\uc5d0 \ud560\uba38\ub2c8\ub97c \ubc29\ubb38\ud588\ub2e4.'},{en:'She went to Paris last year.',ko:'\uadf8\ub140\ub294 \uc791\ub144\uc5d0 \ud30c\ub9ac\uc5d0 \uac14\ub2e4.'},{en:'Did you watch the game?',ko:'\uacbd\uae30\ub97c \ubd24\ub098\uc694?'},{en:"He didn't come to the party.",ko:'\uadf8\ub294 \ud30c\ud2f0\uc5d0 \uc624\uc9c0 \uc54a\uc558\ub2e4.'}],
+   completed:true,createdAt:Date.now()-5*864e5},
+  {id:'u4',title:'Past Continuous',subtitle:'\uacfc\uac70 \uc9c4\ud589\ud615',summary:'\uacfc\uac70\uc758 \ud2b9\uc815 \uc2dc\uc810\uc5d0 \uc9c4\ud589 \uc911\uc774\ub358 \uc77c\uc744 \ub9d0\ud560 \ub54c \uc0ac\uc6a9\ud55c\ub2e4. was/were + -ing \ud615\ud0dc.',
+   examples:[{en:'I was sleeping at 11 last night.',ko:'\ub098\ub294 \uc5b4\uc81f\ubc24 11\uc2dc\uc5d0 \uc790\uace0 \uc788\uc5c8\ub2e4.'},{en:'She was cooking when I called her.',ko:'\ub0b4\uac00 \uc804\ud654\ud588\uc744 \ub54c \uadf8\ub140\ub294 \uc694\ub9ac\ud558\uace0 \uc788\uc5c8\ub2e4.'},{en:'They were waiting for the bus.',ko:'\uadf8\ub4e4\uc740 \ubc84\uc2a4\ub97c \uae30\ub2e4\ub9ac\uace0 \uc788\uc5c8\ub2e4.'}],
+   completed:false,createdAt:Date.now()-4*864e5},
+  {id:'u5',title:'Present Perfect',subtitle:'\ud604\uc7ac \uc644\ub8cc',summary:'\uacfc\uac70\uc5d0 \uc2dc\uc791\ub41c \uc77c\uc774 \ud604\uc7ac\uae4c\uc9c0 \uc601\ud5a5\uc744 \ubbf8\uce60 \ub54c \uc0ac\uc6a9\ud55c\ub2e4. have/has + \uacfc\uac70\ubd84\uc0ac \ud615\ud0dc.',
+   examples:[{en:'I have never been to London.',ko:'\ub098\ub294 \ub7f0\ub358\uc5d0 \uac00\ubcf8 \uc801\uc774 \uc5c6\ub2e4.'},{en:'She has just finished her homework.',ko:'\uadf8\ub140\ub294 \ubc29\uae08 \uc219\uc81c\ub97c \ub9c8\ucce4\ub2e4.'},{en:'Have you eaten lunch yet?',ko:'\uc810\uc2ec\uc744 \uc544\uc9c1 \uba39\uc9c0 \uc54a\uc558\ub098\uc694?'},{en:'He has lived here for 10 years.',ko:'\uadf8\ub294 10\ub144 \ub3d9\uc548 \uc5ec\uae30 \uc0b4\uc558\ub2e4.'}],
+   completed:false,createdAt:Date.now()-3*864e5},
+  {id:'u6',title:'Future with will',subtitle:'\ubbf8\ub798 \uc2dc\uc81c (will)',summary:'\ubbf8\ub798\uc758 \uc758\uc9c0\ub098 \uc608\uce21\uc744 \ud45c\ud604\ud560 \ub54c will\uc744 \uc0ac\uc6a9\ud55c\ub2e4. will + \ub3d9\uc0ac\uc6d0\ud615 \ud615\ud0dc.',
+   examples:[{en:'I will call you tomorrow.',ko:'\ub0b4\uc77c \uc804\ud654\ud560\uac8c\uc694.'},{en:'It will rain this afternoon.',ko:'\uc624\ub298 \uc624\ud6c4\uc5d0 \ube44\uac00 \uc62c \uac83\uc774\ub2e4.'},{en:'Will you help me with this?',ko:'\uc774\uac83 \uc880 \ub3c4\uc640\uc8fc\uc2dc\uac3c\uc5b4\uc694?'}],
+   completed:false,createdAt:Date.now()-2*864e5},
+  {id:'u7',title:'Can / Could',subtitle:'\uc870\ub3d9\uc0ac can\uacfc could',summary:'\ub2a5\ub825, \uac00\ub2a5\uc131, \ud5c8\uac00\ub97c \ud45c\ud604\ud560 \ub54c \uc0ac\uc6a9\ud55c\ub2e4. can\uc740 \ud604\uc7ac, could\ub294 \uacfc\uac70 \ub610\ub294 \ub354 \uacf5\uc190\ud55c \ud45c\ud604.',
+   examples:[{en:'I can swim very well.',ko:'\ub098\ub294 \uc218\uc601\uc744 \uc544\uc8fc \uc798 \ud560 \uc218 \uc788\ub2e4.'},{en:'Could you open the window?',ko:'\ucc3d\ubb38\uc744 \uc5f4\uc5b4\uc8fc\uc2dc\uac3c\uc5b4\uc694?'},{en:"She couldn't come yesterday.",ko:'\uadf8\ub140\ub294 \uc5b4\uc81c \uc62c \uc218 \uc5c6\uc5c8\ub2e4.'},{en:'Can I use your phone?',ko:'\uc804\ud654\uae30\ub97c \uc368\ub3c4 \ub420\uae4c\uc694?'}],
+   completed:false,createdAt:Date.now()-864e5},
+  {id:'u8',title:'Articles: a / an / the',subtitle:'\uad00\uc0ac: a, an, the',summary:'\ubd80\uc815\uad00\uc0ac(a/an)\ub294 \uccab \uc5b8\uae09\ud558\uac70\ub098 \ubd88\ud2b9\uc815\ud55c \uac83\uc5d0, \uc815\uad00\uc0ac(the)\ub294 \uc774\ubbf8 \uc54c\uace0 \uc788\uac70\ub098 \ud2b9\uc815\ud55c \uac83\uc5d0 \uc0ac\uc6a9\ud55c\ub2e4.',
+   examples:[{en:'I saw a dog in the park.',ko:'\ub098\ub294 \uacf5\uc6d0\uc5d0\uc11c \uac1c \ud55c \ub9c8\ub9ac\ub97c \ubd10\ub2e4.'},{en:'She is an engineer.',ko:'\uadf8\ub140\ub294 \uc5d4\uc9c0\ub2c8\uc5b4\ub2e4.'},{en:'The book on the table is mine.',ko:'\ud14c\uc774\ube14 \uc704\uc758 \ucc45\uc740 \ub0b4 \uac83\uc774\ub2e4.'},{en:"I don't have a car.",ko:'\ub098\ub294 \ucc28\uac00 \uc5c6\ub2e4.'}],
+   completed:false,createdAt:Date.now()},
 ];
 
-const DEFAULT_PROFILE = { name: '김민준', email: 'minjun@example.com', level: 'Pre-Intermediate' };
-const DEFAULT_SETTINGS = { nav: 'tabbar', dark: false, accent: 'mint' };
+// ===== STORAGE =====
+function ld(k,fb){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb;}catch{return fb;}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
 
-// ─── LOCAL STORAGE ────────────────────────────────────────────────
-function loadStorage(key, fallback) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-  catch { return fallback; }
+// ===== STATE =====
+let S={
+  units:ld('bgiu_u',SAMP),
+  profile:ld('bgiu_p',{name:'\uae40\ubbfc\uc900',email:'minjun@example.com',level:'Pre-Intermediate',photo:null}),
+  settings:ld('bgiu_s',{nav:'tabbar',dark:false,accent:'mint'}),
+  stack:[{screen:'home'}],
+  activeTab:'home',
+  sidebarOpen:false,
+  toast:{msg:'',visible:false},
+  _tt:null,
+  // Google Drive sync state
+  gUser:null,       // {name, email, photo, accessToken}
+  syncStatus:'idle', // idle | syncing | success | error
+  driveFileId:ld('bgiu_fid',null),
+};
+
+function setState(p){Object.assign(S,typeof p==='function'?p(S):p);render();}
+function saveAll(){sv('bgiu_u',S.units);sv('bgiu_p',S.profile);sv('bgiu_s',S.settings);sv('bgiu_fid',S.driveFileId);}
+
+// ===== NAV =====
+function push(e){setState(s=>({stack:[...s.stack,e]}));}
+function pop(){setState(s=>({stack:s.stack.length>1?s.stack.slice(0,-1):s.stack}));}
+function goTab(t){const m={home:'home',review:'reviewGroups',stats:'stats',settings:'settings'};setState({activeTab:t,stack:[{screen:m[t]}]});}
+
+// ===== TOAST =====
+function toast(msg){
+  if(S._tt)clearTimeout(S._tt);
+  const t=setTimeout(()=>setState({toast:{msg:'',visible:false}}),2200);
+  setState({toast:{msg,visible:true},_tt:t});
 }
-function saveStorage(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+
+// ===== ACTIONS =====
+function createUnit(data){
+  const u={id:'u'+Date.now(),...data,completed:false,createdAt:Date.now()};
+  setState(s=>({units:[...s.units,u]}));saveAll();autoSync();toast('\uc0c8 \uc720\ub2db\uc744 \ucd94\uac00\ud588\uc5b4\uc694!');
+}
+function updateUnit(id,data){
+  setState(s=>({units:s.units.map(u=>u.id===id?{...u,...data}:u)}));saveAll();autoSync();toast('\uc800\uc7a5\ub640\uc5b4\uc694!');
+}
+function deleteUnit(id){
+  setState(s=>({units:s.units.filter(u=>u.id!==id)}));saveAll();autoSync();pop();toast('\uc720\ub2db\uc744 \uc0ad\uc81c\ud588\uc5b4\uc694');
+}
+function toggleComplete(id){
+  let msg='';
+  setState(s=>({units:s.units.map(u=>{if(u.id!==id)return u;const n=!u.completed;msg=n?'\uc644\ub8cc\ub85c \ud45c\uc2dc\ud588\uc5b4\uc694! \ud83c\udf89':'\uc644\ub8cc \ud45c\uc2dc\ub97c \ud574\uc81c\ud588\uc5b4\uc694';return{...u,completed:n};})}));
+  saveAll();autoSync();toast(msg);
+}
+function setSetting(k,v){setState(s=>({settings:{...s.settings,[k]:v}}));saveAll();applyTheme();}
+function saveProfile(p){setState({profile:p});saveAll();toast('\ud504\ub85c\ud544\uc744 \uc800\uc7a5\ud588\uc5b4\uc694!');}
+
+// ===== THEME =====
+function applyTheme(){
+  const{dark,accent}=S.settings;
+  const a=AC[accent][dark?'d':'l'];
+  document.documentElement.style.setProperty('--ac',a);
+  document.getElementById('A').className=dark?'dk':'';
 }
 
-// ─── ICONS ───────────────────────────────────────────────────────
-const Icon = ({ name, size = 24, color = 'currentColor', strokeWidth = 1.8 }) => {
-  const s = { width: size, height: size, flexShrink: 0 };
-  const paths = {
-    menu: <><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>,
-    back: <><polyline points="15,18 9,12 15,6"/></>,
-    plus: <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
-    trash: <><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1 2-2h4a2,2 0 0,1 2,2v2"/></>,
-    edit: <><path d="M11,4H4a2,2 0 0,0-2,2v14a2,2 0 0,0 2,2h14a2,2 0 0,0 2-2v-7"/><path d="M18.5,2.5a2.121,2.121 0 0,1 3,3L12,15l-4,1 1-4 9.5-9.5z"/></>,
-    check: <><polyline points="20,6 9,17 4,12"/></>,
-    more: <><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></>,
-    search: <><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
-    shuffle: <><polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21,16 21,21 16,21"/><line x1="4" y1="4" x2="9" y2="9"/></>,
-    refresh: <><polyline points="23,4 23,10 17,10"/><path d="M20.49,15a9,9 0 1,1-2.12-9.36L23,10"/></>,
-    upload: <><path d="M21,15v4a2,2 0 0,1-2,2H5a2,2 0 0,1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></>,
-    download: <><path d="M21,15v4a2,2 0 0,1-2,2H5a2,2 0 0,1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></>,
-    user: <><path d="M20,21v-2a4,4 0 0,0-4-4H8a4,4 0 0,0-4,4v2"/><circle cx="12" cy="7" r="4"/></>,
-    bell: <><path d="M18,8A6,6 0 0,0 6,8c0,7-3,9-3,9h18s-3-2-3-9"/><path d="M13.73,21a2,2 0 0,1-3.46,0"/></>,
-    home: <><path d="M3,9l9-7 9,7v11a2,2 0 0,1-2,2H5a2,2 0 0,1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></>,
-    review: <><polyline points="1,4 1,10 7,10"/><path d="M3.51,15a9,9 0 1,0 .49-4.5"/></>,
-    stats: <><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>,
-    settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4,15a1.65,1.65 0 0,0 .33,1.82l.06.06a2,2 0 0,1-2.83,2.83l-.06-.06a1.65,1.65 0 0,0-1.82-.33 1.65,1.65 0 0,0-1,1.51V21a2,2 0 0,1-4,0v-.09A1.65,1.65 0 0,0 9,19.4a1.65,1.65 0 0,0-1.82.33l-.06.06a2,2 0 0,1-2.83-2.83l.06-.06A1.65,1.65 0 0,0 4.68,15a1.65,1.65 0 0,0-1.51-1H3a2,2 0 0,1 0-4h.09A1.65,1.65 0 0,0 4.6,9a1.65,1.65 0 0,0-.33-1.82l-.06-.06a2,2 0 0,1 2.83-2.83l.06.06A1.65,1.65 0 0,0 9,4.68a1.65,1.65 0 0,0 1-1.51V3a2,2 0 0,1 4,0v.09a1.65,1.65 0 0,0 1,1.51 1.65,1.65 0 0,0 1.82-.33l.06-.06a2,2 0 0,1 2.83,2.83l-.06.06A1.65,1.65 0 0,0 19.4,9a1.65,1.65 0 0,0 1.51,1H21a2,2 0 0,1 0,4h-.09a1.65,1.65 0 0,0-1.51,1z"/></>,
-    moon: <><path d="M21,12.79A9,9 0 1,1 11.21,3 7,7 0 0,0 21,12.79z"/></>,
-    chevron_right: <><polyline points="9,18 15,12 9,6"/></>,
-    chevron_left: <><polyline points="15,18 9,12 15,6"/></>,
-    x: <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
-    google: null,
-  };
-  if (name === 'google') return (
-    <svg style={s} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-    </svg>
-  );
-  return (
-    <svg style={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-      {paths[name]}
-    </svg>
-  );
-};
+// ===== GOOGLE DRIVE SYNC =====
+let _tokenClient=null;
 
-// ─── PROGRESS RING ────────────────────────────────────────────────
-const ProgressRing = ({ size, progress, color, strokeWidth = 4, children }) => {
-  const r = (size - strokeWidth) / 2;
-  const circ = 2 * Math.PI * r;
-  const offset = circ * (1 - progress);
-  return (
-    <div style={{ width: size, height: size, position: 'relative', flexShrink: 0 }}>
-      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--bg3)" strokeWidth={strokeWidth}/>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={strokeWidth}
-          strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(.3,.7,.4,1)' }}/>
-      </svg>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {children}
-      </div>
-    </div>
-  );
-};
+function initGIS(){
+  if(!window.google||!window.google.accounts)return;
+  _tokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:CLIENT_ID,
+    scope:SCOPES,
+    callback:(resp)=>{
+      if(resp.error){toast('\uad6c\uae00 \uc5f0\uacb0 \uc2e4\ud328: '+resp.error);setState({syncStatus:'error'});return;}
+      S.gUser={...S.gUser,accessToken:resp.access_token};
+      saveAll();
+      toast('\uad6c\uae00 \ub85c\uadf8\uc778 \uc131\uacf5! \ub3d9\uae30\ud654 \uc911...');
+      syncFromDrive();
+    },
+  });
+}
 
-// ─── AVATAR ───────────────────────────────────────────────────────
-const Avatar = ({ name, size = 36, accent }) => {
-  const initial = name ? name[0] : '?';
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%',
-      background: `linear-gradient(135deg, ${accent}cc, ${accent})`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      color: '#fff', fontSize: size * 0.4, fontWeight: 700, flexShrink: 0,
-    }}>{initial}</div>
-  );
-};
-
-// ─── BADGE / PILL ─────────────────────────────────────────────────
-const Pill = ({ children, color, bg, style: sx }) => (
-  <span style={{
-    display: 'inline-flex', alignItems: 'center',
-    padding: '2px 8px', borderRadius: 999,
-    fontSize: 11, fontWeight: 600, letterSpacing: 0.4,
-    color: color || 'var(--accent)', background: bg || 'rgba(0,199,190,0.12)',
-    ...sx,
-  }}>{children}</span>
-);
-
-// ─── SWITCH TOGGLE ────────────────────────────────────────────────
-const Toggle = ({ value, onChange }) => (
-  <div onClick={() => onChange(!value)} className="tap" style={{
-    width: 51, height: 31, borderRadius: 999, flexShrink: 0,
-    background: value ? 'var(--green)' : 'var(--bg4)',
-    position: 'relative', transition: 'background 0.22s cubic-bezier(.32,.72,.32,1)',
-  }}>
-    <div style={{
-      position: 'absolute', top: 2, left: value ? 22 : 2,
-      width: 27, height: 27, borderRadius: '50%', background: '#fff',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.20)',
-      transition: 'left 0.22s cubic-bezier(.32,.72,.32,1)',
-    }}/>
-  </div>
-);
-
-// ─── SEGMENTED CONTROL ────────────────────────────────────────────
-const SegmentedControl = ({ options, value, onChange }) => (
-  <div style={{
-    display: 'flex', background: 'var(--bg3)', borderRadius: 10, padding: 2,
-  }}>
-    {options.map(opt => (
-      <div key={opt.value} onClick={() => onChange(opt.value)} className="tap" style={{
-        flex: 1, textAlign: 'center', padding: '7px 0', borderRadius: 8, fontSize: 14, fontWeight: 600,
-        background: value === opt.value ? 'var(--bg2)' : 'transparent',
-        color: value === opt.value ? 'var(--text1)' : 'var(--text2)',
-        boxShadow: value === opt.value ? '0 1px 4px rgba(0,0,0,0.12)' : 'none',
-        transition: 'background 0.18s, box-shadow 0.18s',
-      }}>{opt.label}</div>
-    ))}
-  </div>
-);
-
-// ─── TOAST ────────────────────────────────────────────────────────
-const Toast = ({ message, visible }) => (
-  <div style={{
-    position: 'fixed', bottom: 100, left: '50%', transform: `translateX(-50%) translateY(${visible ? 0 : 12}px)`,
-    background: 'rgba(0,0,0,0.82)', color: '#fff', borderRadius: 999,
-    padding: '10px 20px', fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap',
-    opacity: visible ? 1 : 0, transition: 'opacity 0.22s, transform 0.22s',
-    zIndex: 9999, pointerEvents: 'none',
-  }}>{message}</div>
-);
-
-// ─── HEADER ───────────────────────────────────────────────────────
-const Header = ({ title, leading, trailing, largeTitle, largeSubtitle }) => (
-  <div style={{
-    position: 'sticky', top: 0, zIndex: 100,
-    background: 'var(--bar-bg)', backdropFilter: 'blur(22px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(22px) saturate(180%)',
-    borderBottom: `1px solid var(--sep)`,
-  }}>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', height: 52 }}>
-      <div style={{ minWidth: 60 }}>{leading}</div>
-      <span style={{ fontSize: 17, fontWeight: 600, letterSpacing: -0.4 }}>{title}</span>
-      <div style={{ minWidth: 60, display: 'flex', justifyContent: 'flex-end' }}>{trailing}</div>
-    </div>
-    {largeTitle && (
-      <div style={{ padding: '4px 20px 14px' }}>
-        <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: -0.8, lineHeight: 1.15 }}>{largeTitle}</div>
-        {largeSubtitle && <div style={{ fontSize: 14, color: 'var(--text2)', marginTop: 3 }}>{largeSubtitle}</div>}
-      </div>
-    )}
-  </div>
-);
-
-// ─── BOTTOM SHEET ─────────────────────────────────────────────────
-const Sheet = ({ visible, onClose, title, children }) => (
-  <>
-    <div onClick={onClose} style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 500,
-      opacity: visible ? 1 : 0, pointerEvents: visible ? 'auto' : 'none',
-      transition: 'opacity 0.22s',
-    }}/>
-    <div style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 501,
-      background: 'var(--bg2)', borderRadius: '20px 20px 0 0',
-      boxShadow: '0 -8px 24px rgba(0,0,0,0.18)',
-      transform: visible ? 'translateY(0)' : 'translateY(100%)',
-      transition: `transform var(--sheet-transition)`,
-      maxHeight: '80vh', display: 'flex', flexDirection: 'column',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
-        <div style={{ width: 36, height: 4, borderRadius: 999, background: 'var(--bg4)' }}/>
-      </div>
-      {title && <div style={{ fontSize: 17, fontWeight: 700, textAlign: 'center', padding: '4px 20px 12px', letterSpacing: -0.3 }}>{title}</div>}
-      <div className="scroll-area" style={{ flex: 1, padding: '0 0 env(safe-area-inset-bottom, 20px)' }}>{children}</div>
-    </div>
-  </>
-);
-
-// ─── TAB BAR ─────────────────────────────────────────────────────
-const TabBar = ({ activeTab, onTab, accent }) => {
-  const tabs = [
-    { id: 'home', icon: 'home', label: '유닛' },
-    { id: 'review', icon: 'review', label: '복습' },
-    { id: 'stats', icon: 'stats', label: '통계' },
-    { id: 'settings', icon: 'settings', label: '설정' },
-  ];
-  return (
-    <div style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 200,
-      background: 'var(--bar-bg)', backdropFilter: 'blur(22px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(22px) saturate(180%)',
-      borderTop: '1px solid var(--sep)',
-      display: 'flex', padding: '8px 0 calc(8px + env(safe-area-inset-bottom, 12px))',
-    }}>
-      {tabs.map(t => {
-        const active = activeTab === t.id;
-        return (
-          <div key={t.id} onClick={() => onTab(t.id)} className="tap" style={{
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-            color: active ? accent : 'var(--text2)',
-          }}>
-            <Icon name={t.icon} size={22} color={active ? accent : 'var(--text2)'}/>
-            <span style={{ fontSize: 10, fontWeight: active ? 600 : 500 }}>{t.label}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-// ─── SIDEBAR ─────────────────────────────────────────────────────
-const Sidebar = ({ open, onClose, activeTab, onTab, profile, accent }) => {
-  const tabs = [
-    { id: 'home', icon: 'home', label: '유닛' },
-    { id: 'review', icon: 'review', label: '복습' },
-    { id: 'stats', icon: 'stats', label: '통계' },
-    { id: 'settings', icon: 'settings', label: '설정' },
-  ];
-  return (
-    <>
-      <div onClick={onClose} style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 300,
-        opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none', transition: 'opacity 0.26s',
-      }}/>
-      <div style={{
-        position: 'fixed', top: 0, left: 0, bottom: 0, width: 280, zIndex: 301,
-        background: 'var(--bg2)', boxShadow: '6px 0 24px rgba(0,0,0,0.22)',
-        transform: open ? 'translateX(0)' : 'translateX(-100%)',
-        transition: 'transform 0.26s cubic-bezier(.32,.72,.32,1)',
-        display: 'flex', flexDirection: 'column', padding: '60px 16px 32px',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
-          <Avatar name={profile.name} size={56} accent={accent}/>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 700 }}>{profile.name}</div>
-            <div style={{ fontSize: 13, color: 'var(--text2)' }}>{profile.email}</div>
-            <Pill style={{ marginTop: 4 }}>{profile.level}</Pill>
-          </div>
-        </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {tabs.map(t => {
-            const active = activeTab === t.id;
-            return (
-              <div key={t.id} onClick={() => { onTab(t.id); onClose(); }} className="tap" style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                padding: '12px 16px', borderRadius: 12,
-                background: active ? `${accent}20` : 'transparent',
-                color: active ? accent : 'var(--text1)',
-                fontWeight: active ? 600 : 500, fontSize: 16,
-              }}>
-                <Icon name={t.icon} size={22} color={active ? accent : 'var(--text2)'}/>
-                {t.label}
-              </div>
-            );
-          })}
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--text3)', textAlign: 'center' }}>BGIU · 베이직 그래마 인 유즈</div>
-      </div>
-    </>
-  );
-};
-
-// ─── GROUPED LIST ─────────────────────────────────────────────────
-const GroupedList = ({ children, label, style: sx }) => (
-  <div style={{ marginBottom: 20, ...sx }}>
-    {label && <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 32px 6px' }}>{label}</div>}
-    <div style={{ background: 'var(--bg2)', borderRadius: 14, marginHorizontal: 16, overflow: 'hidden', border: '1px solid var(--sep)' }}>
-      {children}
-    </div>
-  </div>
-);
-
-const ListRow = ({ icon, iconBg, label, sublabel, detail, chevron = true, onClick, labelColor, detailColor }) => (
-  <div onClick={onClick} className={onClick ? 'tap' : ''} style={{
-    display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', minHeight: 44,
-    borderBottom: '1px solid var(--sep)', cursor: onClick ? 'pointer' : 'default',
-  }}>
-    {icon && <div style={{ width: 32, height: 32, borderRadius: 8, background: iconBg || 'var(--bg3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</div>}
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <div style={{ fontSize: 16, fontWeight: 500, color: labelColor || 'var(--text1)', letterSpacing: -0.3 }}>{label}</div>
-      {sublabel && <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 1 }}>{sublabel}</div>}
-    </div>
-    {detail && <div style={{ fontSize: 14, color: detailColor || 'var(--text2)', flexShrink: 0 }}>{detail}</div>}
-    {chevron && onClick && <Icon name="chevron_right" size={18} color="var(--text3)"/>}
-  </div>
-);
-
-// ─── BUTTON ───────────────────────────────────────────────────────
-const Btn = ({ children, variant = 'primary', size = 'lg', onClick, disabled, icon, style: sx }) => {
-  const accent = 'var(--accent)';
-  const styles = {
-    primary: { background: accent, color: '#fff' },
-    tinted: { background: `color-mix(in srgb, var(--accent) 15%, transparent)`, color: accent },
-    gray: { background: 'var(--bg3)', color: 'var(--text1)' },
-    red: { background: '#FF3B3020', color: 'var(--red)' },
-    green: { background: 'var(--green)', color: '#fff' },
-    'red-solid': { background: 'var(--red)', color: '#fff' },
-    'green-solid': { background: 'var(--green)', color: '#fff' },
-  };
-  const sizes = {
-    lg: { padding: '15px 20px', fontSize: 17, fontWeight: 600, borderRadius: 14 },
-    md: { padding: '11px 16px', fontSize: 15, fontWeight: 600, borderRadius: 12 },
-    sm: { padding: '7px 14px', fontSize: 13, fontWeight: 600, borderRadius: 10 },
-  };
-  return (
-    <button onClick={onClick} disabled={disabled} className="tap" style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-      width: '100%', border: 'none', cursor: disabled ? 'default' : 'pointer',
-      opacity: disabled ? 0.4 : 1,
-      ...styles[variant], ...sizes[size], letterSpacing: -0.3, ...sx,
-    }}>
-      {icon && <Icon name={icon} size={18} color="currentColor"/>}
-      {children}
-    </button>
-  );
-};
-
-// ══════════════════════════════════════════════════════════════
-// HOME SCREEN
-// ══════════════════════════════════════════════════════════════
-const HomeScreen = ({ units, profile, accent, onUnitClick, onAddUnit, onToggleComplete, showToast }) => {
-  const [page, setPage] = useState(1);
-  const PER_PAGE = 6;
-  const todayUnit = units.find(u => !u.completed) ?? null;
-  const completed = units.filter(u => u.completed).length;
-  const total = units.length;
-  const pct = total > 0 ? Math.round(completed / total * 100) : 0;
-  const totalPages = Math.ceil(units.length / PER_PAGE);
-  const pageUnits = units.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-
-  return (
-    <div className="scroll-area" style={{ flex: 1, paddingBottom: 90 }}>
-      {/* Today Card */}
-      <div style={{ padding: '16px 16px 0' }}>
-        {todayUnit ? (
-          <div onClick={() => onUnitClick(todayUnit.id)} className="tap" style={{
-            background: accent, borderRadius: 20, padding: '20px 20px',
-            position: 'relative', overflow: 'hidden', marginBottom: 16,
-            boxShadow: `0 8px 24px ${accent}60`,
-          }}>
-            <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }}/>
-            <div style={{ position: 'absolute', bottom: -30, right: 30, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.10)' }}/>
-            <Pill style={{ background: 'rgba(255,255,255,0.25)', color: '#fff', marginBottom: 10 }}>오늘의 학습</Pill>
-            <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: -0.5, marginBottom: 4 }}>{todayUnit.title}</div>
-            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.80)', marginBottom: 8 }}>{todayUnit.subtitle}</div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: 14 }}>{todayUnit.summary}</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>학습 시작하기 →</div>
-          </div>
-        ) : (
-          <div style={{ background: accent, borderRadius: 20, padding: '24px 20px', textAlign: 'center', marginBottom: 16 }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>🎉</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>모든 유닛을 완료했어요!</div>
-          </div>
-        )}
-
-        {/* Mini Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 24 }}>
-          {[
-            { label: '완료', value: completed, color: accent },
-            { label: '남은 유닛', value: total - completed, color: 'var(--text1)' },
-            { label: '진행률', value: `${pct}%`, color: accent },
-          ].map(s => (
-            <div key={s.label} style={{ background: 'var(--bg2)', borderRadius: 14, padding: '14px 12px', textAlign: 'center', border: '1px solid var(--sep)' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: s.color, letterSpacing: -0.5 }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 3 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Unit List Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.4 }}>유닛 목록</div>
-          <div onClick={onAddUnit} className="tap" style={{ fontSize: 14, fontWeight: 600, color: accent, cursor: 'pointer' }}>+ 새 유닛</div>
-        </div>
-      </div>
-
-      {/* Unit List */}
-      <div style={{ padding: '0 16px' }}>
-        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 16 }}>
-          {pageUnits.map((unit, i) => (
-            <div key={unit.id} onClick={() => onUnitClick(unit.id)} className="tap" style={{
-              display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', minHeight: 58,
-              borderBottom: i < pageUnits.length - 1 ? '1px solid var(--sep)' : 'none',
-              cursor: 'pointer',
-            }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-                background: unit.completed ? accent : 'var(--bg3)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                {unit.completed
-                  ? <Icon name="check" size={16} color="#fff" strokeWidth={2.5}/>
-                  : <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text2)' }}>{units.indexOf(unit) + 1 < 10 ? `0${units.indexOf(unit)+1}` : units.indexOf(unit)+1}</span>
-                }
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 16, fontWeight: 500, letterSpacing: -0.3 }}>{unit.title}</div>
-                <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>{unit.subtitle} · 예문 {unit.examples.length}개</div>
-              </div>
-              <Icon name="chevron_right" size={18} color="var(--text3)"/>
-            </div>
-          ))}
-          {units.length === 0 && (
-            <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--text2)' }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>📚</div>
-              <div style={{ fontSize: 15 }}>유닛이 없어요. 새 유닛을 추가해보세요!</div>
-            </div>
-          )}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
-            <div onClick={() => setPage(p => Math.max(1, p - 1))} className="tap" style={{ padding: 8, color: page === 1 ? 'var(--text3)' : 'var(--text1)' }}>
-              <Icon name="chevron_left" size={18}/>
-            </div>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-              <div key={p} onClick={() => setPage(p)} className="tap" style={{
-                width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: p === page ? accent : 'var(--bg2)', color: p === page ? '#fff' : 'var(--text1)',
-                fontSize: 14, fontWeight: 600, border: `1px solid ${p === page ? 'transparent' : 'var(--sep)'}`,
-              }}>{p}</div>
-            ))}
-            <div onClick={() => setPage(p => Math.min(totalPages, p + 1))} className="tap" style={{ padding: 8, color: page === totalPages ? 'var(--text3)' : 'var(--text1)' }}>
-              <Icon name="chevron_right" size={18}/>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// ══════════════════════════════════════════════════════════════
-// UNIT DETAIL
-// ══════════════════════════════════════════════════════════════
-const UnitDetailScreen = ({ unit, accent, onBack, onEdit, onDelete, onToggleComplete, onReview }) => {
-  const [showMore, setShowMore] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  if (!unit) return null;
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Header
-        title="유닛"
-        leading={<div onClick={onBack} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--accent)', cursor: 'pointer' }}><Icon name="back" size={20} color="var(--accent)"/></div>}
-        trailing={<div onClick={() => setShowMore(true)} className="tap" style={{ color: 'var(--text2)', cursor: 'pointer', padding: 4 }}><Icon name="more" size={22}/></div>}
-      />
-      <div className="scroll-area" style={{ flex: 1, padding: '20px 16px', paddingBottom: 100 }}>
-        {/* Badges */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-          <Pill color={unit.completed ? 'var(--green)' : accent} bg={unit.completed ? '#34C75920' : `${accent}20`}>
-            {unit.completed ? '완료' : '진행 중'}
-          </Pill>
-          <Pill>예문 {unit.examples.length}</Pill>
-        </div>
-        <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.6, marginBottom: 4 }}>{unit.title}</div>
-        <div style={{ fontSize: 15, color: 'var(--text2)', marginBottom: 20 }}>{unit.subtitle}</div>
-
-        {/* Summary Card */}
-        <div style={{ background: 'var(--bg2)', borderRadius: 14, padding: 16, marginBottom: 20, border: '1px solid var(--sep)' }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: accent, letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 8 }}>핵심 요약</div>
-          <div style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--text1)' }}>{unit.summary}</div>
-        </div>
-
-        {/* Examples */}
-        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 10 }}>예문 ({unit.examples.length})</div>
-        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 20 }}>
-          {unit.examples.map((ex, i) => (
-            <div key={i} style={{ display: 'flex', gap: 12, padding: '14px 16px', borderBottom: i < unit.examples.length - 1 ? '1px solid var(--sep)' : 'none' }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: accent, minWidth: 22, letterSpacing: -0.1 }}>{String(i+1).padStart(2,'0')}</span>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.4 }}>{ex.en}</div>
-                <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 3 }}>{ex.ko}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Complete Toggle */}
-        <div onClick={onToggleComplete} className="tap" style={{
-          display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 14, marginBottom: 16,
-          background: unit.completed ? '#34C75915' : 'var(--bg2)',
-          border: `1px solid ${unit.completed ? 'var(--green)' : 'var(--sep)'}`,
-          cursor: 'pointer',
-        }}>
-          <div style={{
-            width: 26, height: 26, borderRadius: '50%',
-            background: unit.completed ? 'var(--green)' : 'transparent',
-            border: `2px solid ${unit.completed ? 'var(--green)' : 'var(--bg4)'}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>
-            {unit.completed && <Icon name="check" size={14} color="#fff" strokeWidth={2.5}/>}
-          </div>
-          <div style={{ flex: 1, fontSize: 16, fontWeight: 500, color: unit.completed ? 'var(--green)' : 'var(--text1)' }}>
-            {unit.completed ? '완료됨' : '완료로 표시하기'}
-          </div>
-          {!unit.completed && <span style={{ fontSize: 12, color: 'var(--text3)' }}>눌러서 완료</span>}
-        </div>
-
-        {/* Review CTA */}
-        <Btn onClick={onReview} icon="shuffle">이 유닛 복습하기</Btn>
-      </div>
-
-      {/* More Sheet */}
-      <Sheet visible={showMore} onClose={() => setShowMore(false)} title="더보기">
-        <div style={{ padding: '8px 16px 20px' }}>
-          <div onClick={() => { setShowMore(false); onEdit(); }} className="tap" style={{
-            display: 'flex', alignItems: 'center', gap: 14, padding: '16px 0', borderBottom: '1px solid var(--sep)', cursor: 'pointer',
-          }}>
-            <Icon name="edit" size={20} color="var(--text1)"/>
-            <span style={{ fontSize: 16, fontWeight: 500 }}>유닛 편집</span>
-          </div>
-          <div onClick={() => { setShowMore(false); setShowDeleteConfirm(true); }} className="tap" style={{
-            display: 'flex', alignItems: 'center', gap: 14, padding: '16px 0', cursor: 'pointer',
-          }}>
-            <Icon name="trash" size={20} color="var(--red)"/>
-            <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--red)' }}>유닛 삭제</span>
-          </div>
-        </div>
-      </Sheet>
-      {/* Delete Confirm */}
-      <Sheet visible={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="유닛 삭제">
-        <div style={{ padding: '8px 16px 20px' }}>
-          <p style={{ textAlign: 'center', color: 'var(--text2)', fontSize: 14, marginBottom: 20 }}>정말 이 유닛을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다.</p>
-          <Btn variant="red-solid" onClick={() => { setShowDeleteConfirm(false); onDelete(); }}>삭제</Btn>
-          <div style={{ height: 8 }}/>
-          <Btn variant="gray" onClick={() => setShowDeleteConfirm(false)}>취소</Btn>
-        </div>
-      </Sheet>
-    </div>
-  );
-};
-
-// ══════════════════════════════════════════════════════════════
-// UNIT EDIT / CREATE
-// ══════════════════════════════════════════════════════════════
-const UnitEditScreen = ({ unit, onSave, onCancel }) => {
-  const [title, setTitle] = useState(unit?.title || '');
-  const [subtitle, setSubtitle] = useState(unit?.subtitle || '');
-  const [summary, setSummary] = useState(unit?.summary || '');
-  const [examples, setExamples] = useState(unit?.examples || [{ en: '', ko: '' }]);
-
-  const canSave = title.trim() && summary.trim();
-  const handleSave = () => {
-    if (!canSave) return;
-    const clean = examples.filter(e => e.en.trim() || e.ko.trim());
-    onSave({ title: title.trim(), subtitle: subtitle.trim(), summary: summary.trim(), examples: clean.length ? clean : [] });
-  };
-  const addEx = () => setExamples(e => [...e, { en: '', ko: '' }]);
-  const removeEx = i => setExamples(e => e.filter((_, idx) => idx !== i));
-  const updateEx = (i, field, val) => setExamples(e => e.map((ex, idx) => idx === i ? { ...ex, [field]: val } : ex));
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Header
-        title={unit ? '유닛 편집' : '새 유닛'}
-        leading={<div onClick={onCancel} className="tap" style={{ fontSize: 16, color: 'var(--accent)', cursor: 'pointer' }}>취소</div>}
-        trailing={<div onClick={handleSave} className="tap" style={{ fontSize: 16, fontWeight: 600, color: canSave ? 'var(--accent)' : 'var(--text3)', cursor: 'pointer' }}>저장</div>}
-      />
-      <div className="scroll-area" style={{ flex: 1, padding: '20px 16px', paddingBottom: 80 }}>
-        {/* Basic Info */}
-        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 0 6px 4px' }}>기본 정보</div>
-        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 20 }}>
-          {[
-            { label: '제목', value: title, set: setTitle, placeholder: 'Present Simple', required: true },
-            { label: '부제목', value: subtitle, set: setSubtitle, placeholder: '현재 단순시제' },
-          ].map((f, i) => (
-            <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 16px', borderBottom: '1px solid var(--sep)' }}>
-              <span style={{ fontSize: 14, color: 'var(--text2)', minWidth: 52, lineHeight: '48px' }}>{f.label}{f.required && <span style={{ color: 'var(--accent)' }}> *</span>}</span>
-              <input value={f.value} onChange={e => f.set(e.target.value)} placeholder={f.placeholder}
-                style={{ flex: 1, fontSize: 15, padding: '14px 0', color: 'var(--text1)', background: 'none' }}/>
-            </div>
-          ))}
-          <div style={{ padding: '12px 16px' }}>
-            <div style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 6 }}>핵심 요약 <span style={{ color: 'var(--accent)' }}>*</span></div>
-            <textarea value={summary} onChange={e => setSummary(e.target.value)}
-              placeholder="이 문법의 핵심을 간략히 설명해주세요..." rows={3}
-              style={{ width: '100%', fontSize: 14, lineHeight: 1.6, color: 'var(--text1)', background: 'none', outline: 'none', border: 'none' }}/>
-          </div>
-        </div>
-
-        {/* Examples */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 0 6px 4px' }}>
-          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase' }}>예문 ({examples.length})</div>
-        </div>
-        {examples.map((ex, i) => (
-          <div key={i} style={{ background: 'var(--bg2)', borderRadius: 14, padding: '14px 16px', border: '1px solid var(--sep)', marginBottom: 10, position: 'relative' }}>
-            <div onClick={() => removeEx(i)} className="tap" style={{ position: 'absolute', top: 10, right: 10, color: 'var(--red)', cursor: 'pointer', padding: 4 }}>
-              <Icon name="trash" size={16} color="var(--red)"/>
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>영문</div>
-            <input value={ex.en} onChange={e => updateEx(i, 'en', e.target.value)} placeholder="English sentence..."
-              style={{ width: '100%', fontSize: 15, fontWeight: 500, color: 'var(--text1)', marginBottom: 10, paddingRight: 32 }}/>
-            <div style={{ height: 1, background: 'var(--sep)', marginBottom: 10 }}/>
-            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>한국어</div>
-            <input value={ex.ko} onChange={e => updateEx(i, 'ko', e.target.value)} placeholder="한국어 번역..."
-              style={{ width: '100%', fontSize: 13, color: 'var(--text2)' }}/>
-          </div>
-        ))}
-        <Btn variant="tinted" onClick={addEx} icon="plus">예문 추가</Btn>
-      </div>
-    </div>
-  );
-};
-
-// ══════════════════════════════════════════════════════════════
-// REVIEW GROUPS
-// ══════════════════════════════════════════════════════════════
-const ReviewGroupsScreen = ({ units, accent, onGroupClick }) => {
-  const groupSize = 20;
-  const groups = [];
-  for (let i = 0; i < Math.max(1, units.length); i += groupSize) {
-    const slice = units.slice(i, i + groupSize);
-    const gCompleted = slice.filter(u => u.completed).length;
-    groups.push({ id: i / groupSize + 1, units: slice, completed: gCompleted, total: slice.length, from: i + 1, to: i + slice.length });
+function googleLogin(){
+  if(!_tokenClient){
+    // GSI not loaded yet, try init
+    if(window.google&&window.google.accounts){initGIS();}
+    else{toast('Google \uc778\uc99d \ub85c\ub529 \uc911...\uc7a0\uc2dc \ud6c4 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694');return;}
   }
-  return (
-    <div className="scroll-area" style={{ flex: 1, paddingBottom: 90 }}>
-      <div style={{ padding: '16px 16px 0' }}>
-        {groups.map(g => {
-          const pct = g.total > 0 ? g.completed / g.total : 0;
-          return (
-            <div key={g.id} onClick={() => onGroupClick(g.id)} className="tap" style={{
-              background: 'var(--bg2)', borderRadius: 16, padding: '18px 18px 14px', marginBottom: 14,
-              border: '1px solid var(--sep)', cursor: 'pointer',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-                <div>
-                  <Pill style={{ marginBottom: 6 }}>그룹 {String(g.id).padStart(2,'0')}</Pill>
-                  <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5, marginBottom: 3 }}>유닛 {g.from}–{g.to}</div>
-                  <div style={{ fontSize: 13, color: 'var(--text2)' }}>{g.completed} / {g.total} 완료</div>
-                </div>
-                <ProgressRing size={56} progress={pct} color={accent} strokeWidth={5}>
-                  <span style={{ fontSize: 12, fontWeight: 700 }}>{Math.round(pct * 100)}%</span>
-                </ProgressRing>
-              </div>
-              <div style={{ height: 6, background: 'var(--bg3)', borderRadius: 999, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pct * 100}%`, background: accent, borderRadius: 999, transition: 'width 0.6s cubic-bezier(.3,.7,.4,1)' }}/>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-// ══════════════════════════════════════════════════════════════
-// REVIEW GROUP DETAIL
-// ══════════════════════════════════════════════════════════════
-const ReviewGroupDetailScreen = ({ groupId, units, accent, onBack, onUnitClick, onReview }) => {
-  const groupSize = 20;
-  const start = (groupId - 1) * groupSize;
-  const slice = units.slice(start, start + groupSize);
-  const completed = slice.filter(u => u.completed).length;
-  const pct = slice.length > 0 ? completed / slice.length : 0;
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Header title={`그룹 ${String(groupId).padStart(2,'0')}`}
-        leading={<div onClick={onBack} className="tap" style={{ display: 'flex', alignItems: 'center', color: 'var(--accent)', cursor: 'pointer' }}><Icon name="back" size={20} color="var(--accent)"/><span style={{ fontSize: 15, marginLeft: 2 }}>복습</span></div>}/>
-      <div className="scroll-area" style={{ flex: 1, padding: '16px', paddingBottom: 90 }}>
-        {/* Summary Card */}
-        <div style={{ background: 'var(--bg2)', borderRadius: 16, padding: 18, border: '1px solid var(--sep)', marginBottom: 20, display: 'flex', gap: 16, alignItems: 'center' }}>
-          <ProgressRing size={84} progress={pct} color={accent} strokeWidth={6}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 16, fontWeight: 800 }}>{Math.round(pct*100)}%</div>
-            </div>
-          </ProgressRing>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 700 }}>그룹 {String(groupId).padStart(2,'0')}</div>
-            <div style={{ fontSize: 13, color: 'var(--text2)' }}>유닛 {start+1} – {start+slice.length}</div>
-            <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 2 }}>{completed} 완료 · {slice.length - completed} 남음</div>
-          </div>
-        </div>
-        {/* Unit Rows */}
-        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)' }}>
-          {slice.map((unit, i) => (
-            <div key={unit.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderBottom: i < slice.length - 1 ? '1px solid var(--sep)' : 'none' }}>
-              <div onClick={() => onUnitClick(unit.id)} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, cursor: 'pointer' }}>
-                <div style={{ width: 28, height: 28, borderRadius: 9, background: unit.completed ? 'var(--green)' : 'var(--bg3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  {unit.completed ? <Icon name="check" size={14} color="#fff" strokeWidth={2.5}/> : <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)' }}>{start+i+1 < 10 ? `0${start+i+1}` : start+i+1}</span>}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 15, fontWeight: 500 }}>{unit.title}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text2)' }}>{unit.subtitle} · 예문 {unit.examples.length}개</div>
-                </div>
-              </div>
-              <div onClick={() => onReview(unit.id)} className="tap" style={{
-                padding: '6px 12px', borderRadius: 999, background: `${accent}20`, color: accent,
-                fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
-              }}>복습</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ══════════════════════════════════════════════════════════════
-// REVIEW SESSION
-// ══════════════════════════════════════════════════════════════
-const ReviewSessionScreen = ({ unit, accent, onClose, onComplete }) => {
-  const examples = unit.examples;
-  const [idx, setIdx] = useState(0);
-  const [input, setInput] = useState('');
-  const [revealed, setRevealed] = useState(false);
-  const [scores, setScores] = useState([]);
-  const [done, setDone] = useState(false);
-
-  const current = examples[idx];
-  const progress = (idx) / examples.length;
-
-  const handleReveal = () => setRevealed(true);
-  const handleScore = correct => {
-    const newScores = [...scores, correct];
-    setScores(newScores);
-    if (idx < examples.length - 1) {
-      setIdx(i => i + 1);
-      setInput('');
-      setRevealed(false);
-    } else {
-      setDone(true);
+  // Use Google Identity Services to get user info via id_token
+  const idClient=google.accounts.id;
+  idClient.initialize({
+    client_id:CLIENT_ID,
+    callback:(resp)=>{
+      const payload=parseJwt(resp.credential);
+      setState({gUser:{name:payload.name,email:payload.email,photo:payload.picture,accessToken:null}});
+      sv('bgiu_guser',{name:payload.name,email:payload.email,photo:payload.picture});
+      // Now get access token for Drive
+      _tokenClient.requestAccessToken({prompt:''});
+    },
+    auto_select:false,
+  });
+  idClient.prompt((notification)=>{
+    if(notification.isNotDisplayed()||notification.isSkippedMoment()){
+      // popup fallback
+      _tokenClient.requestAccessToken({prompt:'consent'});
     }
-  };
+  });
+}
 
-  if (done) {
-    const correct = scores.filter(Boolean).length;
-    const total = examples.length;
-    const pct = Math.round(correct / total * 100);
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <Header title={unit.title}
-          leading={<div onClick={onClose} className="tap" style={{ fontSize: 15, color: 'var(--accent)', cursor: 'pointer' }}>닫기</div>}/>
-        <div className="scroll-area" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 24px', paddingBottom: 90 }}>
-          <ProgressRing size={160} progress={pct/100} color={pct >= 70 ? 'var(--green)' : accent} strokeWidth={10}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 36, fontWeight: 800 }}>{pct}%</div>
-              <div style={{ fontSize: 12, color: 'var(--text2)' }}>정답률</div>
-            </div>
-          </ProgressRing>
-          <div style={{ fontSize: 24, fontWeight: 800, marginTop: 24, marginBottom: 6 }}>수고하셨어요!</div>
-          <div style={{ fontSize: 15, color: 'var(--text2)', marginBottom: 28 }}>{unit.title}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, width: '100%', marginBottom: 28 }}>
-            {[{ label: '정답', val: correct, col: 'var(--green)' }, { label: '오답', val: total - correct, col: 'var(--red)' }, { label: '전체', val: total, col: 'var(--text1)' }].map(s => (
-              <div key={s.label} style={{ background: 'var(--bg2)', borderRadius: 14, padding: '14px 0', textAlign: 'center', border: '1px solid var(--sep)' }}>
-                <div style={{ fontSize: 22, fontWeight: 800, color: s.col }}>{s.val}</div>
-                <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 3 }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <Btn variant="tinted" onClick={() => { setIdx(0); setInput(''); setRevealed(false); setScores([]); setDone(false); }}>다시 복습하기</Btn>
-            <Btn onClick={() => onComplete(pct)}>복습 완료</Btn>
-          </div>
-        </div>
-      </div>
-    );
+function googleLoginDirect(){
+  if(!window.google){toast('Google SDK \ub85c\ub529 \uc911...');return;}
+  if(!_tokenClient)initGIS();
+  if(!_tokenClient){toast('Google SDK \ub85c\ub529 \uc911... \uc7a0\uc2dc \ud6c4 \ub2e4\uc2dc \uc2dc\ub3c4\ud574\uc8fc\uc138\uc694');return;}
+  // Use popup sign-in
+  google.accounts.id.initialize({
+    client_id:CLIENT_ID,
+    callback:(resp)=>{
+      const payload=parseJwt(resp.credential);
+      const gu={name:payload.name,email:payload.email,photo:payload.picture,accessToken:null};
+      setState({gUser:gu});
+      sv('bgiu_guser',gu);
+      _tokenClient.requestAccessToken({prompt:''});
+    },
+    auto_select:false,
+  });
+  google.accounts.id.prompt();
+}
+
+function requestDriveToken(){
+  if(!_tokenClient)initGIS();
+  if(!_tokenClient){toast('Google SDK \uc900\ube44 \uc911...');return;}
+  _tokenClient.requestAccessToken({prompt: S.gUser?'':'consent'});
+}
+
+function googleLogout(){
+  if(S.gUser&&window.google){
+    google.accounts.id.revoke(S.gUser.email,()=>{});
+    if(S.gUser.accessToken)google.accounts.oauth2.revoke(S.gUser.accessToken,()=>{});
   }
+  setState({gUser:null,syncStatus:'idle'});
+  sv('bgiu_guser',null);
+  toast('\uad6c\uae00 \ub85c\uadf8\uc544\uc6c3\ud588\uc5b4\uc694');
+}
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Header
-        title={unit.title}
-        leading={<div onClick={onClose} className="tap" style={{ fontSize: 15, color: 'var(--accent)', cursor: 'pointer' }}>닫기</div>}
-        trailing={<span style={{ fontSize: 14, color: 'var(--text2)', fontWeight: 500 }}>{idx+1} / {examples.length}</span>}
-      />
-      {/* Progress bar */}
-      <div style={{ height: 4, background: 'var(--bg3)' }}>
-        <div style={{ height: '100%', width: `${(idx / examples.length) * 100}%`, background: accent, transition: 'width 0.4s' }}/>
-      </div>
-      <div className="scroll-area" style={{ flex: 1, padding: '24px 16px', paddingBottom: 90 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 14 }}>한국어를 영문으로 옮겨보세요</div>
-        <div style={{ fontSize: 24, fontWeight: 700, lineHeight: 1.35, letterSpacing: -0.5, marginBottom: 20 }}>{current.ko}</div>
-        <textarea value={input} onChange={e => setInput(e.target.value)}
-          placeholder="여기에 영문을 입력하세요" rows={3}
-          style={{
-            width: '100%', background: 'var(--bg2)', border: '1px solid var(--sep)', borderRadius: 14,
-            padding: 16, fontSize: 15, lineHeight: 1.6, color: 'var(--text1)',
-            marginBottom: 16, resize: 'none',
-          }}/>
-        {!revealed ? (
-          <Btn variant="tinted" onClick={handleReveal} icon="search">정답 확인</Btn>
-        ) : (
-          <>
-            <div style={{ background: 'var(--bg2)', border: `1px solid ${accent}60`, borderRadius: 14, padding: 16, marginBottom: 8 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: accent, letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 8 }}>정답</div>
-              <div style={{ fontSize: 18, fontWeight: 600 }}>{current.en}</div>
-            </div>
-            <div style={{ fontSize: 13, color: 'var(--text2)', textAlign: 'center', marginBottom: 16 }}>스스로 채점해주세요</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <Btn variant="red-solid" onClick={() => handleScore(false)}>틀렸어요</Btn>
-              <Btn variant="green-solid" onClick={() => handleScore(true)}>맞았어요</Btn>
-            </div>
-          </>
-        )}
-        {/* Prev/Next */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
-          <div onClick={() => { if (idx > 0) { setIdx(i => i - 1); setInput(''); setRevealed(false); } }} className="tap"
-            style={{ fontSize: 14, color: idx === 0 ? 'var(--text3)' : 'var(--text1)', cursor: idx === 0 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Icon name="chevron_left" size={16}/> 이전
-          </div>
-          <div onClick={() => { if (idx < examples.length - 1) { setIdx(i => i + 1); setInput(''); setRevealed(false); } }} className="tap"
-            style={{ fontSize: 14, color: idx === examples.length - 1 ? 'var(--text3)' : 'var(--text1)', cursor: idx === examples.length - 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-            다음 <Icon name="chevron_right" size={16}/>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+function parseJwt(token){
+  try{const b=token.split('.')[1];return JSON.parse(atob(b.replace(/-/g,'+').replace(/_/g,'/')));}
+  catch{return {};}
+}
 
-// ══════════════════════════════════════════════════════════════
-// STATS SCREEN
-// ══════════════════════════════════════════════════════════════
-const StatsScreen = ({ units, accent }) => {
-  const completed = units.filter(u => u.completed).length;
-  const total = units.length;
-  const pct = total > 0 ? completed / total : 0;
-  const totalExamples = units.reduce((a, u) => a + u.examples.length, 0);
-  const weekData = [4, 7, 2, 9, 5, 12, 3];
-  const maxW = Math.max(...weekData);
-  const days = ['월', '화', '수', '목', '금', '토', '일'];
-  const todayIdx = 4; // Friday
-  return (
-    <div className="scroll-area" style={{ flex: 1, paddingBottom: 90 }}>
-      <div style={{ padding: '16px 16px 0' }}>
-        {/* Main Progress Card */}
-        <div style={{ background: 'var(--bg2)', borderRadius: 16, padding: 20, border: '1px solid var(--sep)', marginBottom: 16, display: 'flex', gap: 20, alignItems: 'center' }}>
-          <ProgressRing size={120} progress={pct} color={accent} strokeWidth={9}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, fontWeight: 800 }}>{Math.round(pct*100)}%</div>
-              <div style={{ fontSize: 11, color: 'var(--text2)' }}>진행률</div>
-            </div>
-          </ProgressRing>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 6 }}>전체 진행</div>
-            <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.7 }}>
-              <span style={{ color: accent }}>{completed}</span>
-              <span style={{ color: 'var(--text2)', fontSize: 20 }}> / {total}</span>
-            </div>
-            <div style={{ fontSize: 13, marginTop: 4 }}>
-              <span style={{ color: 'var(--green)', fontWeight: 600 }}>{completed} 완료</span>
-              <span style={{ color: 'var(--text2)' }}> · {total - completed} 남음</span>
-            </div>
-          </div>
-        </div>
-        {/* Mini Stats 2x2 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-          {[
-            { icon: 'stats', label: '전체 유닛', val: total, col: accent, bg: `${accent}15` },
-            { icon: 'check', label: '완료 유닛', val: completed, col: 'var(--green)', bg: '#34C75915' },
-            { icon: 'bell', label: '남은 유닛', val: total - completed, col: 'var(--yellow)', bg: '#FFCC0015' },
-            { icon: 'more', label: '전체 예문', val: totalExamples, col: 'var(--text2)', bg: 'var(--bg3)' },
-          ].map(s => (
-            <div key={s.label} style={{ background: 'var(--bg2)', borderRadius: 14, padding: 16, border: '1px solid var(--sep)' }}>
-              <div style={{ width: 32, height: 32, borderRadius: 10, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
-                <Icon name={s.icon} size={16} color={s.col}/>
-              </div>
-              <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: -0.5 }}>{s.val}</div>
-              <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-        {/* Weekly Chart */}
-        <div style={{ background: 'var(--bg2)', borderRadius: 16, padding: '18px 20px', border: '1px solid var(--sep)', marginBottom: 16 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>이번 주 학습</div>
-          <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 18 }}><span style={{ fontSize: 22, fontWeight: 800, color: 'var(--text1)', letterSpacing: -0.5 }}>30</span> 개의 예문 복습</div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 80 }}>
-            {weekData.map((v, i) => (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, height: '100%', justifyContent: 'flex-end' }}>
-                <div style={{
-                  width: '100%', borderRadius: 6,
-                  height: `${(v / maxW) * 100}%`,
-                  background: i === todayIdx ? accent : `${accent}55`,
-                  minHeight: 4, transition: 'height 0.6s cubic-bezier(.3,.7,.4,1)',
-                }}/>
-                <span style={{ fontSize: 10, color: i === todayIdx ? accent : 'var(--text2)', fontWeight: i === todayIdx ? 700 : 400 }}>{days[i]}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        {/* Unit progress list */}
-        <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>유닛별 완료 현황</div>
-        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)' }}>
-          {units.map((u, i) => (
-            <div key={u.id} style={{ padding: '12px 16px', borderBottom: i < units.length - 1 ? '1px solid var(--sep)' : 'none' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ fontSize: 14, fontWeight: 500 }}>{u.title}</span>
-                <span style={{ fontSize: 12, color: u.completed ? 'var(--green)' : 'var(--text2)', fontWeight: 600 }}>{u.completed ? '완료' : '미완료'}</span>
-              </div>
-              <div style={{ height: 4, background: 'var(--bg3)', borderRadius: 999 }}>
-                <div style={{ height: '100%', width: u.completed ? '100%' : '0%', background: u.completed ? 'var(--green)' : accent, borderRadius: 999 }}/>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
+// Drive API helpers
+async function driveRequest(path,method='GET',body=null,contentType='application/json'){
+  if(!S.gUser?.accessToken)return null;
+  const opts={method,headers:{Authorization:'Bearer '+S.gUser.accessToken}};
+  if(body){
+    opts.headers['Content-Type']=contentType;
+    opts.body=typeof body==='string'?body:JSON.stringify(body);
+  }
+  const r=await fetch('https://www.googleapis.com/'+path,opts);
+  if(r.status===401){
+    setState({gUser:{...S.gUser,accessToken:null}});
+    toast('\uc138\uc158\uc774 \ub9cc\ub8cc\ub418\uc5c8\uc5b4\uc694. \ub2e4\uc2dc \ub85c\uadf8\uc778\ud574\uc8fc\uc138\uc694.');
+    return null;
+  }
+  if(!r.ok)return null;
+  try{return await r.json();}catch{return {};}
+}
 
-// ══════════════════════════════════════════════════════════════
-// SETTINGS SCREEN
-// ══════════════════════════════════════════════════════════════
-const SettingsScreen = ({ profile, settings, accent, onSettingChange, onProfileSave, showToast }) => {
-  const [editProfile, setEditProfile] = useState(false);
-  const [name, setName] = useState(profile.name);
-  const [email, setEmail] = useState(profile.email);
-  const [level, setLevel] = useState(profile.level);
-  const isDark = settings.dark;
-  const accentColor = ACCENTS[settings.accent][isDark ? 'dark' : 'light'];
-  const levels = ['Beginner', 'Pre-Intermediate', 'Intermediate'];
+async function findDriveFile(){
+  const res=await driveRequest("drive/v3/files?spaces=appDataFolder&q=name%3D'"+DRIVE_FILE_NAME+"'&fields=files(id,name,modifiedTime)");
+  if(res&&res.files&&res.files.length>0)return res.files[0];
+  return null;
+}
 
-  return (
-    <div className="scroll-area" style={{ flex: 1, paddingBottom: 90 }}>
-      <div style={{ padding: '16px 16px 0' }}>
-        {/* Profile Card */}
-        <div style={{ background: 'var(--bg2)', borderRadius: 16, padding: '16px 18px', border: '1px solid var(--sep)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
-          <Avatar name={profile.name} size={56} accent={accentColor}/>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 17, fontWeight: 700 }}>{profile.name}</div>
-            <div style={{ fontSize: 13, color: 'var(--text2)' }}>{profile.email}</div>
-            <Pill color={accentColor} bg={`${accentColor}20`} style={{ marginTop: 5 }}>{profile.level}</Pill>
-          </div>
-          <div onClick={() => setEditProfile(true)} className="tap" style={{ color: 'var(--text2)', cursor: 'pointer', padding: 4 }}>
-            <Icon name="edit" size={18}/>
-          </div>
-        </div>
+async function readDriveFile(fileId){
+  if(!S.gUser?.accessToken)return null;
+  const r=await fetch('https://www.googleapis.com/drive/v3/files/'+fileId+'?alt=media',{
+    headers:{Authorization:'Bearer '+S.gUser.accessToken}
+  });
+  if(!r.ok)return null;
+  try{return await r.json();}catch{return null;}
+}
 
-        {/* Account */}
-        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 4px 6px' }}>계정</div>
-        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 20 }}>
-          <div onClick={() => showToast('Google 로그인 준비 중이에요')} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: '1px solid var(--sep)', cursor: 'pointer' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fff', border: '1px solid var(--sep)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="google" size={18}/></div>
-            <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>Google로 로그인</div>
-            <Icon name="google" size={20}/>
-            <Icon name="chevron_right" size={16} color="var(--text3)"/>
-          </div>
-          <div onClick={() => setEditProfile(true)} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', cursor: 'pointer' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--bg3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="edit" size={16} color="var(--text2)"/></div>
-            <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>프로필 편집</div>
-            <Icon name="chevron_right" size={16} color="var(--text3)"/>
-          </div>
-        </div>
+async function writeDriveFile(data){
+  const jsonStr=JSON.stringify(data);
+  const blob=new Blob([jsonStr],{type:'application/json'});
+  if(S.driveFileId){
+    // update
+    const r=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+S.driveFileId+'?uploadType=media',{
+      method:'PATCH',headers:{Authorization:'Bearer '+S.gUser.accessToken,'Content-Type':'application/json'},body:jsonStr
+    });
+    return r.ok;
+  }else{
+    // create in appDataFolder
+    const meta={name:DRIVE_FILE_NAME,parents:['appDataFolder']};
+    const form=new FormData();
+    form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
+    form.append('file',blob);
+    const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{
+      method:'POST',headers:{Authorization:'Bearer '+S.gUser.accessToken},body:form
+    });
+    if(r.ok){const j=await r.json();setState({driveFileId:j.id});sv('bgiu_fid',j.id);return true;}
+    return false;
+  }
+}
 
-        {/* Appearance */}
-        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 4px 6px' }}>모양</div>
-        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 20 }}>
-          {/* Theme Color */}
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--sep)' }}>
-            <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 12 }}>테마 색상</div>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-              {Object.entries(ACCENTS).map(([key, val]) => {
-                const c = val[isDark ? 'dark' : 'light'];
-                const selected = settings.accent === key;
-                return (
-                  <div key={key} onClick={() => onSettingChange('accent', key)} className="tap" style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer',
-                  }}>
-                    <div style={{
-                      width: 36, height: 36, borderRadius: '50%', background: c,
-                      boxShadow: selected ? `0 0 0 3px var(--bg2), 0 0 0 5px ${c}` : 'none',
-                      transition: 'box-shadow 0.2s',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      {selected && <Icon name="check" size={16} color="#fff" strokeWidth={2.5}/>}
-                    </div>
-                    <span style={{ fontSize: 10, fontWeight: 500, color: selected ? c : 'var(--text2)' }}>{val.name}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          {/* Dark Mode */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: '1px solid var(--sep)' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: isDark ? '#1C1C1E' : 'var(--bg3)', border: isDark ? '1px solid #3A3A3C' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Icon name="moon" size={16} color={isDark ? '#fff' : 'var(--text2)'}/>
-            </div>
-            <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>다크 모드</div>
-            <Toggle value={isDark} onChange={v => onSettingChange('dark', v)}/>
-          </div>
-          {/* Navigation */}
-          <div style={{ padding: '14px 16px' }}>
-            <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 10 }}>네비게이션 방식</div>
-            <SegmentedControl
-              options={[{ label: '하단 탭바', value: 'tabbar' }, { label: '사이드바', value: 'sidebar' }]}
-              value={settings.nav} onChange={v => onSettingChange('nav', v)}/>
-            <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 8 }}>탭바는 한 손 조작에 유리하고, 사이드바는 메뉴 확장이 쉬워요.</div>
-          </div>
-        </div>
+async function syncToDrive(){
+  if(!S.gUser?.accessToken){toast('\uba3c\uc800 \uad6c\uae00 \ub85c\uadf8\uc778\uc744 \ud574\uc8fc\uc138\uc694');return;}
+  setState({syncStatus:'syncing'});
+  try{
+    const data={units:S.units,profile:S.profile,settings:S.settings,syncedAt:Date.now()};
+    const ok=await writeDriveFile(data);
+    if(ok){setState({syncStatus:'success'});toast('\u2601\ufe0f Drive \ub3d9\uae30\ud654 \uc644\ub8cc!');}
+    else{setState({syncStatus:'error'});toast('\ub3d9\uae30\ud654 \uc2e4\ud328. \ub2e4\uc2dc \uc2dc\ub3c4\ud574\uc8fc\uc138\uc694.');}
+  }catch(e){setState({syncStatus:'error'});toast('\ub3d9\uae30\ud654 \uc624\ub958: '+e.message);}
+}
 
-        {/* Data */}
-        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 4px 6px' }}>데이터</div>
-        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 20 }}>
-          <div onClick={() => showToast('데이터를 내보내는 중...')} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: '1px solid var(--sep)', cursor: 'pointer' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#34C75920', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="upload" size={16} color="var(--green)"/></div>
-            <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>내보내기 (JSON)</div>
-            <Icon name="chevron_right" size={16} color="var(--text3)"/>
-          </div>
-          <div onClick={() => showToast('데이터 가져오기 준비 중이에요')} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', cursor: 'pointer' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: `${accentColor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="download" size={16} color={accentColor}/></div>
-            <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>가져오기</div>
-            <Icon name="chevron_right" size={16} color="var(--text3)"/>
-          </div>
-        </div>
-
-        {/* Notifications */}
-        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 4px 6px' }}>알림</div>
-        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: `${accentColor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="bell" size={16} color={accentColor}/></div>
-            <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>학습 알림</div>
-            <Toggle value={false} onChange={() => showToast('알림 기능 준비 중이에요')}/>
-          </div>
-        </div>
-
-        {/* App Info */}
-        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 4px 6px' }}>앱 정보</div>
-        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 12 }}>
-          {['이용약관', '개인정보 처리방침', '라이선스'].map((item, i) => (
-            <div key={item} onClick={() => showToast(`${item} 준비 중`)} className="tap" style={{ display: 'flex', alignItems: 'center', padding: '13px 16px', borderBottom: i < 2 ? '1px solid var(--sep)' : 'none', cursor: 'pointer' }}>
-              <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>{item}</div>
-              <Icon name="chevron_right" size={16} color="var(--text3)"/>
-            </div>
-          ))}
-        </div>
-        <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text3)', marginBottom: 24 }}>BGIU v1.0.0</div>
-      </div>
-
-      {/* Profile Edit Sheet */}
-      <Sheet visible={editProfile} onClose={() => setEditProfile(false)} title="프로필 편집">
-        <div style={{ padding: '0 16px 20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-            <Avatar name={name} size={72} accent={accentColor}/>
-          </div>
-          {[
-            { label: '이름', value: name, set: setName, placeholder: '이름' },
-            { label: '이메일', value: email, set: setEmail, placeholder: 'email@example.com' },
-          ].map(f => (
-            <div key={f.label} style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 5 }}>{f.label}</div>
-              <input value={f.value} onChange={e => f.set(e.target.value)} placeholder={f.placeholder}
-                style={{ width: '100%', background: 'var(--bg3)', borderRadius: 10, padding: '12px 14px', fontSize: 15, color: 'var(--text1)' }}/>
-            </div>
-          ))}
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 5 }}>레벨</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {levels.map(l => (
-                <div key={l} onClick={() => setLevel(l)} className="tap" style={{
-                  display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 10,
-                  background: level === l ? `${accentColor}20` : 'var(--bg3)',
-                  border: `1.5px solid ${level === l ? accentColor : 'transparent'}`, cursor: 'pointer',
-                }}>
-                  <div style={{ width: 18, height: 18, borderRadius: '50%', background: level === l ? accentColor : 'var(--bg4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {level === l && <Icon name="check" size={10} color="#fff" strokeWidth={3}/>}
-                  </div>
-                  <span style={{ fontSize: 15, fontWeight: 500 }}>{l}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <Btn onClick={() => { onProfileSave({ name, email, level }); setEditProfile(false); }}>저장</Btn>
-        </div>
-      </Sheet>
-    </div>
-  );
-};
-
-// ══════════════════════════════════════════════════════════════
-// MAIN APP
-// ══════════════════════════════════════════════════════════════
-const App = () => {
-  const [units, setUnits] = useState(() => loadStorage('bgiu_units', SAMPLE_UNITS));
-  const [profile, setProfile] = useState(() => loadStorage('bgiu_profile', DEFAULT_PROFILE));
-  const [settings, setSettings] = useState(() => loadStorage('bgiu_settings', DEFAULT_SETTINGS));
-
-  // Navigation stack
-  const [stack, setStack] = useState([{ screen: 'home', tab: 'home' }]);
-  const [activeTab, setActiveTab] = useState('home');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [toast, setToast] = useState({ msg: '', visible: false });
-  const toastTimeout = useRef(null);
-
-  const isDark = settings.dark;
-  const accentKey = settings.accent;
-  const accent = ACCENTS[accentKey][isDark ? 'dark' : 'light'];
-
-  // Apply theme
-  useEffect(() => {
-    document.documentElement.setAttribute('data-dark', isDark ? 'true' : 'false');
-    document.documentElement.style.setProperty('--accent', accent);
-  }, [isDark, accent]);
-
-  useEffect(() => { saveStorage('bgiu_units', units); }, [units]);
-  useEffect(() => { saveStorage('bgiu_profile', profile); }, [profile]);
-  useEffect(() => { saveStorage('bgiu_settings', settings); }, [settings]);
-
-  const showToast = useCallback(msg => {
-    if (toastTimeout.current) clearTimeout(toastTimeout.current);
-    setToast({ msg, visible: true });
-    toastTimeout.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 1800);
-  }, []);
-
-  const current = stack[stack.length - 1];
-
-  const push = useCallback((entry) => setStack(s => [...s, entry]), []);
-  const pop = useCallback(() => setStack(s => s.length > 1 ? s.slice(0, -1) : s), []);
-  const goTab = useCallback(tab => {
-    setActiveTab(tab);
-    setStack([{ screen: tab === 'home' ? 'home' : tab === 'review' ? 'reviewGroups' : tab === 'stats' ? 'stats' : 'settings', tab }]);
-  }, []);
-
-  // Unit actions
-  const createUnit = useCallback(data => {
-    const unit = { id: `u_${Date.now()}`, ...data, completed: false, createdAt: Date.now() };
-    setUnits(u => [...u, unit]);
-    showToast('새 유닛을 추가했어요!');
-  }, [showToast]);
-
-  const updateUnit = useCallback((id, data) => {
-    setUnits(u => u.map(x => x.id === id ? { ...x, ...data } : x));
-    showToast('저장됐어요!');
-  }, [showToast]);
-
-  const deleteUnit = useCallback(id => {
-    setUnits(u => u.filter(x => x.id !== id));
-    pop();
-    showToast('유닛을 삭제했어요');
-  }, [pop, showToast]);
-
-  const toggleComplete = useCallback(id => {
-    let msg = '';
-    setUnits(u => u.map(x => {
-      if (x.id !== id) return x;
-      const next = !x.completed;
-      msg = next ? '완료로 표시했어요! 🎉' : '완료 표시를 해제했어요';
-      return { ...x, completed: next };
-    }));
-    showToast(msg);
-  }, [showToast]);
-
-  const handleReviewComplete = useCallback((unitId, pct) => {
-    if (pct >= 70) {
-      setUnits(u => u.map(x => x.id === unitId ? { ...x, completed: true } : x));
-      showToast(`복습 완료! 정답률 ${pct}% 🎉`);
-    } else {
-      showToast(`정답률 ${pct}% — 다시 복습해봐요!`);
+async function syncFromDrive(){
+  if(!S.gUser?.accessToken)return;
+  setState({syncStatus:'syncing'});
+  try{
+    let fileId=S.driveFileId;
+    if(!fileId){const f=await findDriveFile();if(f)fileId=f.id;}
+    if(!fileId){
+      // No file yet, push local data
+      await syncToDrive();return;
     }
-    pop();
-  }, [pop, showToast]);
+    setState({driveFileId:fileId});sv('bgiu_fid',fileId);
+    const data=await readDriveFile(fileId);
+    if(data&&data.units){
+      setState({units:data.units,profile:data.profile||S.profile,settings:data.settings||S.settings,syncStatus:'success'});
+      saveAll();applyTheme();
+      toast('\u2601\ufe0f Drive\uc5d0\uc11c \ub370\uc774\ud130\ub97c \uac00\uc838\uc654\uc5b4\uc694!');
+    }else{await syncToDrive();}
+  }catch(e){setState({syncStatus:'error'});toast('\uac00\uc838\uc624\uae30 \uc2e4\ud328: '+e.message);}
+}
 
-  // Render current screen
-  const renderScreen = () => {
-    const { screen, params } = current;
-    switch (screen) {
-      case 'home':
-        return <HomeScreen units={units} profile={profile} accent={accent}
-          onUnitClick={id => push({ screen: 'unitDetail', tab: activeTab, params: { id } })}
-          onAddUnit={() => push({ screen: 'unitEdit', tab: activeTab, params: { id: null } })}
-          onToggleComplete={toggleComplete} showToast={showToast}/>;
+let _autoSyncTimer=null;
+function autoSync(){
+  if(!S.gUser?.accessToken)return;
+  if(_autoSyncTimer)clearTimeout(_autoSyncTimer);
+  _autoSyncTimer=setTimeout(()=>syncToDrive(),2000);
+}
 
-      case 'unitDetail': {
-        const unit = units.find(u => u.id === params?.id);
-        return <UnitDetailScreen unit={unit} accent={accent} onBack={pop}
-          onEdit={() => push({ screen: 'unitEdit', tab: activeTab, params: { id: params?.id } })}
-          onDelete={() => deleteUnit(params?.id)}
-          onToggleComplete={() => toggleComplete(params?.id)}
-          onReview={() => push({ screen: 'reviewSession', tab: activeTab, params: { id: params?.id } })}/>;
-      }
+// Restore google user from localStorage
+(function(){
+  const gu=ld('bgiu_guser',null);
+  if(gu&&gu.email){S.gUser=gu;}
+})();
 
-      case 'unitEdit': {
-        const unit = params?.id ? units.find(u => u.id === params.id) : null;
-        return <UnitEditScreen unit={unit} onCancel={pop}
-          onSave={data => {
-            if (params?.id) { updateUnit(params.id, data); }
-            else { createUnit(data); }
-            pop();
-          }}/>;
-      }
+// ===== SVG ICONS =====
+const IC={
+  menu:'<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>',
+  back:'<polyline points="15,18 9,12 15,6"/>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  trash:'<polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2"/>',
+  edit:'<path d="M11,4H4a2,2,0,0,0-2,2v14a2,2,0,0,0,2,2h14a2,2,0,0,0,2-2v-7"/><path d="M18.5,2.5a2.121,2.121,0,0,1,3,3L12,15l-4,1,1-4z"/>',
+  check:'<polyline points="20,6 9,17 4,12"/>',
+  more:'<circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/>',
+  search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  shuffle:'<polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21,16 21,21 16,21"/><line x1="4" y1="4" x2="9" y2="9"/>',
+  chevR:'<polyline points="9,18 15,12 9,6"/>',
+  chevL:'<polyline points="15,18 9,12 15,6"/>',
+  upload:'<path d="M21,15v4a2,2,0,0,1-2,2H5a2,2,0,0,1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  download:'<path d="M21,15v4a2,2,0,0,1-2,2H5a2,2,0,0,1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  home:'<path d="M3,9l9-7,9,7v11a2,2,0,0,1-2,2H5a2,2,0,0,1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>',
+  review:'<polyline points="1,4 1,10 7,10"/><path d="M3.51,15a9,9,0,1,0,.49-4.5"/>',
+  barchart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  cog:'<circle cx="12" cy="12" r="3"/><path d="M19.4,15a1.65,1.65,0,0,0,.33,1.82l.06.06a2,2,0,0,1-2.83,2.83l-.06-.06a1.65,1.65,0,0,0-2.82.33,1.65,1.65,0,0,0-1,1.51V21a2,2,0,0,1-4,0v-.09A1.65,1.65,0,0,0,9,19.4a1.65,1.65,0,0,0-1.82.33l-.06.06a2,2,0,0,1-2.83-2.83l.06-.06A1.65,1.65,0,0,0,4.68,15a1.65,1.65,0,0,0-1.51-1H3a2,2,0,0,1,0-4h.09A1.65,1.65,0,0,0,4.6,9a1.65,1.65,0,0,0-.33-1.82l-.06-.06a2,2,0,0,1,2.83-2.83l.06.06A1.65,1.65,0,0,0,9,4.68a1.65,1.65,0,0,0,1-1.51V3a2,2,0,0,1,4,0v.09a1.65,1.65,0,0,0,1,1.51,1.65,1.65,0,0,0,1.82-.33l.06-.06a2,2,0,0,1,2.83,2.83l-.06.06A1.65,1.65,0,0,0,19.4,9a1.65,1.65,0,0,0,1.51,1H21a2,2,0,0,1,0,4h-.09a1.65,1.65,0,0,0-1.51,1z"/>',
+  moon:'<path d="M21,12.79A9,9,0,1,1,11.21,3,7,7,0,0,0,21,12.79z"/>',
+  bell:'<path d="M18,8A6,6,0,0,0,6,8c0,7-3,9-3,9h18s-3-2-3-9"/><path d="M13.73,21a2,2,0,0,1-3.46,0"/>',
+  cloud:'<path d="M18,10h-1.26A8,8,0,1,0,9,20h9a5,5,0,0,0,0-10z"/>',
+  logout:'<path d="M9,21H5a2,2,0,0,1-2-2V5A2,2,0,0,1,5,3H9"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+};
+function ico(n,sz=24,c='currentColor'){return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">'+( IC[n]||'')+'</svg>';}
+function gico(sz=20){return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>';}
 
-      case 'reviewGroups':
-        return <ReviewGroupsScreen units={units} accent={accent}
-          onGroupClick={id => push({ screen: 'reviewGroup', tab: 'review', params: { groupId: id } })}/>;
+// ===== DOM HELPERS =====
+function e(tag,style,inner){
+  const el=document.createElement(tag);
+  if(style)Object.assign(el.style,style);
+  if(typeof inner==='string')el.innerHTML=inner;
+  else if(inner instanceof Node)el.appendChild(inner);
+  else if(Array.isArray(inner))inner.forEach(c=>c&&el.appendChild(typeof c==='string'?Object.assign(document.createElement('span'),{innerHTML:c}):c));
+  return el;
+}
+function d(style,inner){return e('div',style,inner);}
+function tap(el,fn){
+  el.style.cursor='pointer';el.style.WebkitTapHighlightColor='transparent';
+  el.addEventListener('click',fn);
+  el.addEventListener('mousedown',()=>el.style.transform='scale(0.97)');
+  el.addEventListener('mouseup',()=>el.style.transform='');
+  el.addEventListener('mouseleave',()=>el.style.transform='');
+  el.addEventListener('touchstart',()=>el.style.transform='scale(0.97)',{passive:true});
+  el.addEventListener('touchend',()=>el.style.transform='');
+  return el;
+}
 
-      case 'reviewGroup':
-        return <ReviewGroupDetailScreen groupId={params?.groupId} units={units} accent={accent} onBack={pop}
-          onUnitClick={id => push({ screen: 'unitDetail', tab: activeTab, params: { id } })}
-          onReview={id => push({ screen: 'reviewSession', tab: activeTab, params: { id } })}/>;
+// ===== COMPONENTS =====
+function mkAvatar(name,sz=36,photo=null){
+  // If photo URL, use image
+  if(photo){
+    const img=e('img',{width:sz+'px',height:sz+'px',borderRadius:'50%',objectFit:'cover',flexShrink:'0'});
+    img.src=photo;img.alt=name||'';
+    img.onerror=function(){this.style.display='none';};
+    return img;
+  }
+  const a=ac();
+  const el=d({width:sz+'px',height:sz+'px',borderRadius:'50%',
+    background:'linear-gradient(135deg,'+a+'99,'+a+')',
+    display:'flex',alignItems:'center',justifyContent:'center',
+    color:'#fff',fontSize:Math.round(sz*0.4)+'px',fontWeight:'700',flexShrink:'0'});
+  el.textContent=(name||'?')[0];return el;
+}
+function mkPill(text,col,bg){
+  const a=ac();
+  const el=d({display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:'999px',
+    fontSize:'11px',fontWeight:'600',letterSpacing:'0.4px',
+    color:col||a,background:bg||(a+'20')});
+  el.textContent=text;return el;
+}
+function mkRing(sz,pct,color,sw=4,labelHTML=''){
+  const r=(sz-sw)/2,circ=2*Math.PI*r,off=circ*(1-pct);
+  const w=d({width:sz+'px',height:sz+'px',position:'relative',flexShrink:'0'});
+  w.innerHTML='<svg width="'+sz+'" height="'+sz+'" style="transform:rotate(-90deg)"><circle cx="'+sz/2+'" cy="'+sz/2+'" r="'+r+'" fill="none" stroke="var(--bg3)" stroke-width="'+sw+'"/><circle cx="'+sz/2+'" cy="'+sz/2+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="'+sw+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+off+'" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s"/></svg>';
+  if(labelHTML){const lb=d({position:'absolute',inset:'0',display:'flex',alignItems:'center',justifyContent:'center'});lb.innerHTML=labelHTML;w.appendChild(lb);}
+  return w;
+}
+function mkToggle(val,onChange){
+  const w=d({width:'51px',height:'31px',borderRadius:'999px',flexShrink:'0',
+    background:val?'var(--green)':'var(--bg4)',position:'relative',
+    transition:'background 0.22s',cursor:'pointer'});
+  const k=d({position:'absolute',top:'2px',left:val?'22px':'2px',
+    width:'27px',height:'27px',borderRadius:'50%',background:'#fff',
+    boxShadow:'0 1px 3px rgba(0,0,0,.2)',transition:'left 0.22s'});
+  w.appendChild(k);w.addEventListener('click',()=>onChange(!val));return w;
+}
+function mkBtn(txt,variant,onClick,icName){
+  const a=ac();
+  const styles={primary:{background:a,color:'#fff'},
+    tinted:{background:a+'22',color:a},gray:{background:'var(--bg3)',color:'var(--t1)'},
+    'red-solid':{background:'var(--red)',color:'#fff'},'green-solid':{background:'var(--green)',color:'#fff'},
+    'google':{background:'var(--bg2)',color:'var(--t1)',border:'1px solid var(--sep)'},
+  };
+  const s=styles[variant]||styles.primary;
+  const b=e('button',{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',
+    width:'100%',padding:'14px 20px',borderRadius:'13px',fontSize:'16px',fontWeight:'600',
+    letterSpacing:'-0.3px',transition:'transform 0.12s',...s});
+  if(icName==='google'){b.innerHTML=gico(20);}
+  else if(icName){b.innerHTML=ico(icName,18,s.color||'currentColor');}
+  b.appendChild(document.createTextNode(txt));
+  if(onClick)b.addEventListener('click',onClick);
+  b.addEventListener('mousedown',()=>b.style.transform='scale(0.97)');
+  b.addEventListener('mouseup',()=>b.style.transform='');
+  b.addEventListener('mouseleave',()=>b.style.transform='');
+  b.addEventListener('touchstart',()=>b.style.transform='scale(0.97)',{passive:true});
+  b.addEventListener('touchend',()=>b.style.transform='');
+  return b;
+}
+function mkHdr(title,leadEl,trailEl){
+  const w=d({position:'sticky',top:'0',zIndex:'100',background:'var(--bar)',
+    backdropFilter:'blur(22px) saturate(180%)',WebkitBackdropFilter:'blur(22px) saturate(180%)',
+    borderBottom:'1px solid var(--sep)'});
+  const row=d({display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',height:'52px'});
+  const lead=d({minWidth:'60px'});if(leadEl)lead.appendChild(leadEl);
+  const cen=d({fontSize:'17px',fontWeight:'600',letterSpacing:'-0.4px'});cen.textContent=title;
+  const trail=d({minWidth:'60px',display:'flex',justifyContent:'flex-end'});if(trailEl)trail.appendChild(trailEl);
+  row.append(lead,cen,trail);w.appendChild(row);return{bar:w,row,lead,cen,trail};
+}
+function mkSheet(title,contentFn){
+  const ov=d({position:'fixed',inset:'0',background:'rgba(0,0,0,0.4)',zIndex:'500',opacity:'0',transition:'opacity 0.22s',pointerEvents:'none'});
+  const sh=d({position:'fixed',bottom:'0',left:'0',right:'0',zIndex:'501',background:'var(--bg2)',borderRadius:'20px 20px 0 0',
+    boxShadow:'0 -8px 24px rgba(0,0,0,.18)',transform:'translateY(100%)',transition:'transform 0.28s cubic-bezier(.32,.72,.32,1)',
+    maxHeight:'85vh',display:'flex',flexDirection:'column',overflow:'hidden'});
+  const handle=d({display:'flex',justifyContent:'center',padding:'12px 0 4px'});handle.innerHTML='<div style="width:36px;height:4px;border-radius:999px;background:var(--bg4)"></div>';sh.appendChild(handle);
+  if(title){const t=d({fontSize:'17px',fontWeight:'700',textAlign:'center',padding:'4px 20px 12px'});t.textContent=title;sh.appendChild(t);}
+  const cnt=d({flex:'1',overflowY:'auto',padding:'0 0 20px'});cnt.className='sc';
+  function close(){ov.style.opacity='0';ov.style.pointerEvents='none';sh.style.transform='translateY(100%)';setTimeout(()=>{ov.remove();sh.remove();},300);}
+  const nodes=contentFn(close);
+  if(Array.isArray(nodes))nodes.forEach(n=>n&&cnt.appendChild(n));else if(nodes)cnt.appendChild(nodes);
+  sh.appendChild(cnt);
+  function open(){document.body.appendChild(ov);document.body.appendChild(sh);requestAnimationFrame(()=>{ov.style.opacity='1';ov.style.pointerEvents='auto';sh.style.transform='translateY(0)';});}
+  ov.addEventListener('click',close);return{open,close};
+}
 
-      case 'reviewSession': {
-        const unit = units.find(u => u.id === params?.id);
-        if (!unit) return null;
-        return <ReviewSessionScreen unit={unit} accent={accent} onClose={pop}
-          onComplete={pct => handleReviewComplete(params.id, pct)}/>;
-      }
+// ===== SYNC STATUS INDICATOR =====
+function syncStatusDot(){
+  const colors={idle:'var(--bg4)',syncing:ac(),success:'var(--green)',error:'var(--red)'};
+  const labels={idle:'',syncing:'\ub3d9\uae30\ud654 \uc911...',success:'',error:'\uc624\ub958'};
+  const c=colors[S.syncStatus]||'var(--bg4)';
+  const dot=d({width:'8px',height:'8px',borderRadius:'50%',background:c,flexShrink:'0',
+    animation:S.syncStatus==='syncing'?'pulse 1s infinite':'none'});
+  return dot;
+}
 
-      case 'stats':
-        return <StatsScreen units={units} accent={accent}/>;
+// ===== SCREENS =====
+function scrHome(){
+  const a=ac();const{units}=S;
+  const done=units.filter(u=>u.completed).length,total=units.length,pct=total?Math.round(done/total*100):0;
+  const today=units.find(u=>!u.completed)||null;
+  const w=d({flex:'1',overflowY:'auto',paddingBottom:'90px'});w.className='sc';
+  const inn=d({padding:'16px 16px 0'});
+  if(today){
+    const c=d({background:a,borderRadius:'20px',padding:'20px',position:'relative',overflow:'hidden',marginBottom:'16px',boxShadow:'0 8px 24px '+a+'60'});
+    c.innerHTML='<div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.15)"></div><div style="position:absolute;bottom:-30px;right:30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.10)"></div><span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(255,255,255,.25);color:#fff;margin-bottom:10px">\uc624\ub298\uc758 \ud559\uc2b5</span><div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:4px">'+today.title+'</div><div style="font-size:14px;color:rgba(255,255,255,.80);margin-bottom:8px">'+today.subtitle+'</div><div style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:14px">'+today.summary+'</div><div style="font-size:14px;font-weight:600;color:#fff">\ud559\uc2b5 \uc2dc\uc791\ud558\uae30 \u2192</div>';
+    tap(c,()=>push({screen:'unitDetail',params:{id:today.id}}));inn.appendChild(c);
+  }else{
+    const c=d({background:a,borderRadius:'20px',padding:'24px 20px',textAlign:'center',marginBottom:'16px'});
+    c.innerHTML='<div style="font-size:32px;margin-bottom:8px">\ud83c\udf89</div><div style="font-size:18px;font-weight:700;color:#fff">\ubaa8\ub4e0 \uc720\ub2db\uc744 \uc644\ub8cc\ud588\uc5b4\uc694!</div>';inn.appendChild(c);
+  }
+  const sr=d({display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'8px',marginBottom:'24px'});
+  [{l:'\uc644\ub8cc',v:done,c:a},{l:'\ub0a8\uc740 \uc720\ub2db',v:total-done,c:'var(--t1)'},{l:'\uc9c4\ud589\ub960',v:pct+'%',c:a}].forEach(s=>{
+    const c=d({background:'var(--bg2)',borderRadius:'14px',padding:'14px 12px',textAlign:'center',border:'1px solid var(--sep)'});
+    c.innerHTML='<div style="font-size:22px;font-weight:800;color:'+s.c+';letter-spacing:-0.5px">'+s.v+'</div><div style="font-size:12px;color:var(--t2);margin-top:3px">'+s.l+'</div>';
+    sr.appendChild(c);
+  });inn.appendChild(sr);
+  const lh=d({display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'12px'});
+  const lht=d({fontSize:'22px',fontWeight:'800',letterSpacing:'-0.4px'});lht.textContent='\uc720\ub2db \ubaa9\ub85d';
+  const add=d({fontSize:'14px',fontWeight:'600',color:a,cursor:'pointer'});add.textContent='+ \uc0c8 \uc720\ub2db';
+  tap(add,()=>push({screen:'unitEdit',params:{id:null}}));lh.append(lht,add);inn.appendChild(lh);
+  w.appendChild(inn);
+  const lw=d({padding:'0 16px'});
+  const lc=d({background:'var(--bg2)',borderRadius:'14px',overflow:'hidden',border:'1px solid var(--sep)',marginBottom:'16px'});
+  if(!units.length){const em=d({padding:'32px 20px',textAlign:'center',color:'var(--t2)'});em.innerHTML='\ud83d\udcda<br>\uc720\ub2db\uc774 \uc5c6\uc5b4\uc694. \uc0c8 \uc720\ub2db\uc744 \ucd94\uac00\ud574\ubcf4\uc138\uc694!';lc.appendChild(em);}
+  units.forEach((u,i)=>{
+    const row=d({display:'flex',alignItems:'center',gap:'12px',padding:'12px 14px',minHeight:'58px',borderBottom:i<units.length-1?'1px solid var(--sep)':'none'});
+    const bdg=d({width:'32px',height:'32px',borderRadius:'10px',flexShrink:'0',background:u.completed?a:'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center'});
+    bdg.innerHTML=u.completed?ico('check',16,'#fff'):'<span style="font-size:13px;font-weight:700;color:var(--t2)">'+String(i+1).padStart(2,'0')+'</span>';
+    const inf=d({flex:'1',minWidth:'0'});inf.innerHTML='<div style="font-size:16px;font-weight:500;letter-spacing:-0.3px">'+u.title+'</div><div style="font-size:12px;color:var(--t2);margin-top:2px">'+u.subtitle+' \u00b7 \uc608\ubb38 '+u.examples.length+'\uac1c</div>';
+    const ch=d({flexShrink:'0'});ch.innerHTML=ico('chevR',18,'var(--t3)');
+    row.append(bdg,inf,ch);tap(row,()=>push({screen:'unitDetail',params:{id:u.id}}));lc.appendChild(row);
+  });
+  lw.appendChild(lc);w.appendChild(lw);return w;
+}
 
-      case 'settings':
-        return <SettingsScreen profile={profile} settings={settings} accent={accent}
-          onSettingChange={(k, v) => setSettings(s => ({ ...s, [k]: v }))}
-          onProfileSave={p => { setProfile(p); showToast('프로필을 저장했어요!'); }}
-          showToast={showToast}/>;
+function scrDetail(uid){
+  const a=ac();const unit=S.units.find(u=>u.id===uid);
+  if(!unit){const w=d({padding:'20px'});w.textContent='\uc720\ub2db\uc744 \ucc3e\uc744 \uc218 \uc5c6\uc5b4\uc694';return w;}
+  const w=d({display:'flex',flexDirection:'column',height:'100%'});
+  const backEl=d({display:'flex',alignItems:'center',color:a,cursor:'pointer',gap:'2px'});backEl.innerHTML=ico('back',20,a);tap(backEl,pop);
+  const moreEl=d({color:'var(--t2)',cursor:'pointer',padding:'4px'});moreEl.innerHTML=ico('more',22,'var(--t2)');
+  tap(moreEl,()=>{
+    const sh=mkSheet('\ub354\ubcf4\uae30',cl=>{
+      const c=d({padding:'8px 0 0'});
+      const er=d({display:'flex',alignItems:'center',gap:'14px',padding:'16px',borderBottom:'1px solid var(--sep)',cursor:'pointer'});
+      er.innerHTML=ico('edit',20,'var(--t1)')+'<span style="font-size:16px;font-weight:500;margin-left:14px">\uc720\ub2db \ud3b8\uc9d1</span>';
+      tap(er,()=>{cl();push({screen:'unitEdit',params:{id:uid}});});
+      const dr=d({display:'flex',alignItems:'center',gap:'14px',padding:'16px',cursor:'pointer'});
+      dr.innerHTML=ico('trash',20,'var(--red)')+'<span style="font-size:16px;font-weight:500;color:var(--red);margin-left:14px">\uc720\ub2db \uc0ad\uc81c</span>';
+      tap(dr,()=>{cl();
+        const ds=mkSheet('\uc720\ub2db \uc0ad\uc81c',cl2=>{
+          const dc=d({padding:'8px 16px 20px'});
+          const dp=d({textAlign:'center',color:'var(--t2)',fontSize:'14px',marginBottom:'20px'});dp.textContent='\uc815\ub9d0 \uc774 \uc720\ub2db\uc744 \uc0ad\uc81c\ud558\uc2dc\uac2c\uc5b4\uc694?';
+          dc.appendChild(dp);dc.appendChild(mkBtn('\uc0ad\uc81c','red-solid',()=>{cl2();deleteUnit(uid);}));
+          const sp=d({height:'8px'});dc.appendChild(sp);dc.appendChild(mkBtn('\ucde8\uc18c','gray',cl2));return dc;
+        });ds.open();
+      });
+      c.append(er,dr);return c;
+    });sh.open();
+  });
+  const{bar}=mkHdr('\uc720\ub2db',backEl,moreEl);w.appendChild(bar);
+  const sc=d({flex:'1',overflowY:'auto',padding:'20px 16px 100px'});sc.className='sc';
+  const bg=d({display:'flex',gap:'6px',marginBottom:'12px'});
+  bg.appendChild(mkPill(unit.completed?'\uc644\ub8cc':'\uc9c4\ud589 \uc911',unit.completed?'var(--green)':a,unit.completed?'rgba(52,199,89,.15)':a+'20'));
+  bg.appendChild(mkPill('\uc608\ubb38 '+unit.examples.length));sc.appendChild(bg);
+  const tEl=d({fontSize:'28px',fontWeight:'800',letterSpacing:'-0.6px',marginBottom:'4px'});tEl.textContent=unit.title;
+  const sEl=d({fontSize:'15px',color:'var(--t2)',marginBottom:'20px'});sEl.textContent=unit.subtitle;
+  sc.append(tEl,sEl);
+  const sum=d({background:'var(--bg2)',borderRadius:'14px',padding:'16px',marginBottom:'20px',border:'1px solid var(--sep)'});
+  sum.innerHTML='<div style="font-size:12px;font-weight:600;color:'+a+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px">\ud575\uc2ec \uc694\uc57d</div>';
+  const st=d({fontSize:'15px',lineHeight:'1.65'});st.textContent=unit.summary;sum.appendChild(st);sc.appendChild(sum);
+  const exh=d({fontSize:'14px',fontWeight:'600',color:'var(--t2)',letterSpacing:'.4px',textTransform:'uppercase',marginBottom:'10px'});exh.textContent='\uc608\ubb38 ('+unit.examples.length+')';sc.appendChild(exh);
+  const exc=d({background:'var(--bg2)',borderRadius:'14px',overflow:'hidden',border:'1px solid var(--sep)',marginBottom:'20px'});
+  unit.examples.forEach((ex,i)=>{
+    const row=d({display:'flex',gap:'12px',padding:'14px 16px',borderBottom:i<unit.examples.length-1?'1px solid var(--sep)':'none'});
+    const num=d({fontSize:'13px',fontWeight:'700',color:a,minWidth:'22px'});num.textContent=String(i+1).padStart(2,'0');
+    const inf=d({});inf.innerHTML='<div style="font-size:16px;font-weight:500;line-height:1.4">'+ex.en+'</div><div style="font-size:13px;color:var(--t2);margin-top:3px">'+ex.ko+'</div>';
+    row.append(num,inf);exc.appendChild(row);
+  });sc.appendChild(exc);
+  const ct=d({display:'flex',alignItems:'center',gap:'14px',padding:'14px 16px',borderRadius:'14px',marginBottom:'16px',
+    background:unit.completed?'rgba(52,199,89,.10)':'var(--bg2)',border:'1px solid '+(unit.completed?'var(--green)':'var(--sep)')});
+  const ck=d({width:'26px',height:'26px',borderRadius:'50%',background:unit.completed?'var(--green)':'transparent',
+    border:'2px solid '+(unit.completed?'var(--green)':'var(--bg4)'),display:'flex',alignItems:'center',justifyContent:'center',flexShrink:'0'});
+  if(unit.completed)ck.innerHTML=ico('check',14,'#fff');
+  const cl=d({flex:'1',fontSize:'16px',fontWeight:'500',color:unit.completed?'var(--green)':'var(--t1)'});cl.textContent=unit.completed?'\uc644\ub8cc\ub428':'\uc644\ub8cc\ub85c \ud45c\uc2dc\ud558\uae30';
+  ct.append(ck,cl);if(!unit.completed){const ht=d({fontSize:'12px',color:'var(--t3)'});ht.textContent='\ub208\ub7ec\uc11c \uc644\ub8cc';ct.appendChild(ht);}
+  tap(ct,()=>toggleComplete(uid));sc.appendChild(ct);
+  sc.appendChild(mkBtn('\uc774 \uc720\ub2db \ubcf5\uc2b5\ud558\uae30','primary',()=>push({screen:'reviewSession',params:{id:uid}}),'shuffle'));
+  w.appendChild(sc);return w;
+}
 
-      default:
-        return null;
+function scrEdit(uid){
+  const a=ac();const ex=uid?S.units.find(u=>u.id===uid):null;
+  let fd={title:ex?.title||'',subtitle:ex?.subtitle||'',summary:ex?.summary||'',examples:ex?JSON.parse(JSON.stringify(ex.examples)):[{en:'',ko:''}]};
+  const w=d({display:'flex',flexDirection:'column',height:'100%'});
+  const cancelEl=d({fontSize:'16px',color:a,cursor:'pointer',minWidth:'60px'});cancelEl.textContent='\ucde8\uc18c';tap(cancelEl,pop);
+  const saveEl=d({fontSize:'16px',fontWeight:'600',cursor:'pointer',minWidth:'60px',textAlign:'right',color:'var(--t3)'});saveEl.textContent='\uc800\uc7a5';
+  function chkSave(){saveEl.style.color=fd.title.trim()&&fd.summary.trim()?a:'var(--t3)';}
+  tap(saveEl,()=>{
+    if(!fd.title.trim()||!fd.summary.trim())return;
+    const clean=fd.examples.filter(ex=>ex.en.trim()||ex.ko.trim());
+    const data={title:fd.title.trim(),subtitle:fd.subtitle.trim(),summary:fd.summary.trim(),examples:clean};
+    if(uid)updateUnit(uid,data);else createUnit(data);pop();
+  });
+  const{bar}=mkHdr(uid?'\uc720\ub2db \ud3b8\uc9d1':'\uc0c8 \uc720\ub2db',cancelEl,saveEl);w.appendChild(bar);
+  const sc=d({flex:'1',overflowY:'auto',padding:'20px 16px 80px'});sc.className='sc';
+  function secLbl(t){const s=d({fontSize:'13px',fontWeight:'500',color:'var(--t2)',letterSpacing:'.4px',textTransform:'uppercase',padding:'0 4px 6px'});s.textContent=t;return s;}
+  sc.appendChild(secLbl('\uae30\ubcf8 \uc815\ubcf4'));
+  const bc=d({background:'var(--bg2)',borderRadius:'14px',overflow:'hidden',border:'1px solid var(--sep)',marginBottom:'20px'});
+  [['\uc81c\ubaa9','title','Present Simple',true],['\ubd80\uc81c\ubaa9','subtitle','\ud604\uc7ac \ub2e8\uc21c\uc2dc\uc81c',false]].forEach(([lbl,key,ph,req])=>{
+    const row=d({display:'flex',alignItems:'center',gap:'12px',padding:'0 16px',borderBottom:'1px solid var(--sep)'});
+    const lb=d({fontSize:'14px',color:'var(--t2)',minWidth:'52px',lineHeight:'48px'});lb.innerHTML=lbl+(req?'<span style="color:var(--ac)"> *</span>':'');
+    const inp=e('input',{flex:'1',fontSize:'15px',padding:'14px 0',background:'none',color:'var(--t1)'});
+    inp.placeholder=ph;inp.value=fd[key];inp.addEventListener('input',ev=>{fd[key]=ev.target.value;chkSave();});
+    row.append(lb,inp);bc.appendChild(row);
+  });
+  const sr=d({padding:'12px 16px'});
+  const sl=d({fontSize:'14px',color:'var(--t2)',marginBottom:'6px'});sl.innerHTML='\ud575\uc2ec \uc694\uc57d <span style="color:var(--ac)">*</span>';
+  const sta=e('textarea',{width:'100%',fontSize:'14px',lineHeight:'1.6',background:'none',color:'var(--t1)'});
+  sta.rows=3;sta.placeholder='\uc774 \ubb38\ubc95\uc758 \ud575\uc2ec\uc744 \uac04\ub7b5\ud788 \uc124\uba85\ud574\uc8fc\uc138\uc694...';sta.value=fd.summary;
+  sta.addEventListener('input',ev=>{fd.summary=ev.target.value;chkSave();});
+  sr.append(sl,sta);bc.appendChild(sr);sc.appendChild(bc);chkSave();
+  const exh=d({display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0 4px 6px',marginBottom:'0'});
+  const excnt=d({fontSize:'13px',fontWeight:'500',color:'var(--t2)',letterSpacing:'.4px',textTransform:'uppercase'});
+  exh.appendChild(excnt);sc.appendChild(exh);
+  const exlist=d({});sc.appendChild(exlist);
+  function rebuildEx(){
+    excnt.textContent='\uc608\ubb38 ('+fd.examples.length+')';exlist.innerHTML='';
+    fd.examples.forEach((ex,i)=>{
+      const c=d({background:'var(--bg2)',borderRadius:'14px',padding:'14px 16px',border:'1px solid var(--sep)',marginBottom:'10px',position:'relative'});
+      const del=d({position:'absolute',top:'10px',right:'10px',cursor:'pointer',padding:'4px'});del.innerHTML=ico('trash',16,'var(--red)');tap(del,()=>{fd.examples.splice(i,1);rebuildEx();});
+      const el1=d({fontSize:'12px',color:'var(--t3)',marginBottom:'4px'});el1.textContent='\uc601\ubb38';
+      const ei=e('input',{width:'100%',fontSize:'15px',fontWeight:'500',paddingRight:'32px',background:'none',color:'var(--t1)'});
+      ei.placeholder='English sentence...';ei.value=ex.en;ei.addEventListener('input',ev=>fd.examples[i].en=ev.target.value);
+      const sep=d({height:'1px',background:'var(--sep)',margin:'10px 0'});
+      const kl=d({fontSize:'12px',color:'var(--t3)',marginBottom:'4px'});kl.textContent='\ud55c\uad6d\uc5b4';
+      const ki=e('input',{width:'100%',fontSize:'13px',background:'none',color:'var(--t1)'});
+      ki.placeholder='\ud55c\uad6d\uc5b4 \ubc88\uc5ed...';ki.value=ex.ko;ki.addEventListener('input',ev=>fd.examples[i].ko=ev.target.value);
+      c.append(del,el1,ei,sep,kl,ki);exlist.appendChild(c);
+    });
+  }
+  rebuildEx();
+  sc.appendChild(mkBtn('\uc608\ubb38 \ucd94\uac00','tinted',()=>{fd.examples.push({en:'',ko:''});rebuildEx();},'plus'));
+  w.appendChild(sc);return w;
+}
+
+function scrReviewGroups(){
+  const a=ac();const{units}=S;
+  const w=d({flex:'1',overflowY:'auto',paddingBottom:'90px'});w.className='sc';
+  const inn=d({padding:'16px 16px 0'});
+  const gs=20;const groups=[];
+  for(let i=0;i<Math.max(1,units.length);i+=gs){
+    const sl=units.slice(i,i+gs);
+    groups.push({id:Math.floor(i/gs)+1,units:sl,done:sl.filter(u=>u.completed).length,total:sl.length,from:i+1,to:i+sl.length});
+  }
+  groups.forEach(g=>{
+    const pct=g.total?g.done/g.total:0;
+    const c=d({background:'var(--bg2)',borderRadius:'16px',padding:'18px 18px 14px',marginBottom:'14px',border:'1px solid var(--sep)'});
+    const top=d({display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'14px'});
+    const inf=d({});inf.appendChild(mkPill('\uadf8\ub8f9 '+String(g.id).padStart(2,'0')));
+    const tt=d({fontSize:'22px',fontWeight:'800',letterSpacing:'-0.5px',margin:'6px 0 3px'});tt.textContent='\uc720\ub2db '+g.from+'\u2013'+g.to;
+    const ss=d({fontSize:'13px',color:'var(--t2)'});ss.textContent=g.done+' / '+g.total+' \uc644\ub8cc';
+    inf.append(tt,ss);const ring=mkRing(56,pct,a,5,'<span style="font-size:12px;font-weight:700">'+Math.round(pct*100)+'%</span>');
+    top.append(inf,ring);c.appendChild(top);
+    const bar=d({height:'6px',background:'var(--bg3)',borderRadius:'999px',overflow:'hidden'});
+    const fill=d({height:'100%',width:Math.round(pct*100)+'%',background:a,borderRadius:'999px',transition:'width 0.6s'});
+    bar.appendChild(fill);c.appendChild(bar);
+    tap(c,()=>push({screen:'reviewGroup',params:{groupId:g.id}}));inn.appendChild(c);
+  });
+  w.appendChild(inn);return w;
+}
+
+function scrGroupDetail(gid){
+  const a=ac();const{units}=S;const gs=20,start=(gid-1)*gs;
+  const sl=units.slice(start,start+gs),done=sl.filter(u=>u.completed).length,pct=sl.length?done/sl.length:0;
+  const w=d({display:'flex',flexDirection:'column',height:'100%'});
+  const backEl=d({display:'flex',alignItems:'center',color:a,cursor:'pointer',gap:'2px',minWidth:'60px'});
+  backEl.innerHTML=ico('back',20,a)+'<span style="font-size:15px;margin-left:2px">\ubcf5\uc2b5</span>';tap(backEl,pop);
+  const{bar}=mkHdr('\uadf8\ub8f9 '+String(gid).padStart(2,'0'),backEl,null);w.appendChild(bar);
+  const sc=d({flex:'1',overflowY:'auto',padding:'16px',paddingBottom:'90px'});sc.className='sc';
+  const sum=d({background:'var(--bg2)',borderRadius:'16px',padding:'18px',border:'1px solid var(--sep)',marginBottom:'20px',display:'flex',gap:'16px',alignItems:'center'});
+  sum.appendChild(mkRing(84,pct,a,6,'<div style="text-align:center"><div style="font-size:16px;font-weight:800">'+Math.round(pct*100)+'%</div></div>'));
+  const si=d({});si.innerHTML='<div style="font-size:16px;font-weight:700">\uadf8\ub8f9 '+String(gid).padStart(2,'0')+'</div><div style="font-size:13px;color:var(--t2)">\uc720\ub2db '+(start+1)+' \u2013 '+(start+sl.length)+'</div><div style="font-size:13px;color:var(--t2);margin-top:2px">'+done+' \uc644\ub8cc \u00b7 '+(sl.length-done)+' \ub0a8\uc74c</div>';
+  sum.appendChild(si);sc.appendChild(sum);
+  const lc=d({background:'var(--bg2)',borderRadius:'14px',overflow:'hidden',border:'1px solid var(--sep)'});
+  sl.forEach((u,i)=>{
+    const row=d({display:'flex',alignItems:'center',gap:'12px',padding:'12px 14px',borderBottom:i<sl.length-1?'1px solid var(--sep)':'none'});
+    const bdg=d({width:'28px',height:'28px',borderRadius:'9px',background:u.completed?'var(--green)':'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:'0'});
+    bdg.innerHTML=u.completed?ico('check',14,'#fff'):'<span style="font-size:11px;font-weight:700;color:var(--t2)">'+String(start+i+1).padStart(2,'0')+'</span>';
+    const inf=d({flex:'1',cursor:'pointer'});inf.innerHTML='<div style="font-size:15px;font-weight:500">'+u.title+'</div><div style="font-size:12px;color:var(--t2)">'+u.subtitle+' \u00b7 \uc608\ubb38 '+u.examples.length+'\uac1c</div>';
+    tap(inf,()=>push({screen:'unitDetail',params:{id:u.id}}));
+    const rb=d({padding:'6px 12px',borderRadius:'999px',background:a+'22',color:a,fontSize:'12px',fontWeight:'600',flexShrink:'0'});rb.textContent='\ubcf5\uc2b5';
+    tap(rb,()=>push({screen:'reviewSession',params:{id:u.id}}));row.append(bdg,inf,rb);lc.appendChild(row);
+  });
+  sc.appendChild(lc);w.appendChild(sc);return w;
+}
+
+function scrSession(uid){
+  const a=ac();const unit=S.units.find(u=>u.id===uid);
+  if(!unit||!unit.examples.length){const w=d({padding:'20px'});w.textContent='\uc608\ubb38\uc774 \uc5c6\uc5b4\uc694';return w;}
+  const examples=unit.examples;let idx=0,inp='',revealed=false,scores=[];
+  const w=d({display:'flex',flexDirection:'column',height:'100%'});
+  function buildHdr(){
+    const closeEl=d({fontSize:'15px',color:a,cursor:'pointer',minWidth:'60px'});closeEl.textContent='\ub2eb\uae30';tap(closeEl,pop);
+    const cntEl=d({fontSize:'14px',color:'var(--t2)',fontWeight:'500',minWidth:'60px',textAlign:'right'});cntEl.textContent=(idx+1)+' / '+examples.length;
+    const{bar}=mkHdr(unit.title,closeEl,cntEl);return bar;
+  }
+  function build(){
+    w.innerHTML='';
+    if(idx>=examples.length){
+      const correct=scores.filter(Boolean).length,total=scores.length,pct=total?Math.round(correct/total*100):0;
+      if(pct>=70){S.units=S.units.map(u=>u.id===uid?{...u,completed:true}:u);saveAll();autoSync();}
+      w.appendChild(buildHdr());
+      const sc=d({flex:'1',overflowY:'auto',display:'flex',flexDirection:'column',alignItems:'center',padding:'40px 24px 90px'});sc.className='sc';
+      sc.appendChild(mkRing(160,pct/100,pct>=70?'var(--green)':a,10,'<div style="text-align:center"><div style="font-size:36px;font-weight:800">'+pct+'%</div><div style="font-size:12px;color:var(--t2)">\uc815\ub2f5\ub960</div></div>'));
+      const tt=d({fontSize:'24px',fontWeight:'800',marginTop:'24px',marginBottom:'6px',textAlign:'center'});tt.textContent='\uc218\uace0\ud558\uc168\uc5b4\uc694!';
+      const st=d({fontSize:'15px',color:'var(--t2)',marginBottom:'28px',textAlign:'center'});st.textContent=unit.title;sc.append(tt,st);
+      const gr=d({display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'12px',width:'100%',marginBottom:'28px'});
+      [{l:'\uc815\ub2f5',v:correct,c:'var(--green)'},{l:'\uc624\ub2f5',v:total-correct,c:'var(--red)'},{l:'\uc804\uccb4',v:total,c:'var(--t1)'}].forEach(s=>{
+        const c=d({background:'var(--bg2)',borderRadius:'14px',padding:'14px 0',textAlign:'center',border:'1px solid var(--sep)'});
+        c.innerHTML='<div style="font-size:22px;font-weight:800;color:'+s.c+'">'+s.v+'</div><div style="font-size:12px;color:var(--t2);margin-top:3px">'+s.l+'</div>';gr.appendChild(c);
+      });sc.appendChild(gr);
+      const btns=d({width:'100%',display:'flex',flexDirection:'column',gap:'10px'});
+      btns.appendChild(mkBtn('\ub2e4\uc2dc \ubcf5\uc2b5\ud558\uae30','tinted',()=>{idx=0;inp='';revealed=false;scores=[];build();}));
+      btns.appendChild(mkBtn('\ubcf5\uc2b5 \uc644\ub8cc','primary',()=>{pop();toast('\ubcf5\uc2b5 \uc644\ub8cc! \uc815\ub2f5\ub960 '+pct+'% '+(pct>=70?'\ud83c\udf89':''));}));
+      sc.appendChild(btns);w.appendChild(sc);return;
     }
-  };
+    const ex=examples[idx];
+    w.appendChild(buildHdr());
+    const pb=d({height:'4px',background:'var(--bg3)'});
+    const pf=d({height:'100%',width:Math.round((idx/examples.length)*100)+'%',background:a,transition:'width 0.4s'});pb.appendChild(pf);w.appendChild(pb);
+    const sc=d({flex:'1',overflowY:'auto',padding:'24px 16px 90px'});sc.className='sc';
+    const lb=d({fontSize:'12px',fontWeight:'600',color:'var(--t2)',letterSpacing:'.4px',textTransform:'uppercase',marginBottom:'14px'});lb.textContent='\ud55c\uad6d\uc5b4\ub97c \uc601\ubb38\uc73c\ub85c \uc625\uaca8\ubcf4\uc138\uc694';
+    const qt=d({fontSize:'24px',fontWeight:'700',lineHeight:'1.35',letterSpacing:'-0.5px',marginBottom:'20px'});qt.textContent=ex.ko;
+    const ta=e('textarea',{width:'100%',background:'var(--bg2)',border:'1px solid var(--sep)',borderRadius:'14px',padding:'16px',fontSize:'15px',lineHeight:'1.6',marginBottom:'16px',color:'var(--t1)'});
+    ta.rows=3;ta.placeholder='\uc5ec\uae30\uc5d0 \uc601\ubb38\uc744 \uc785\ub825\ud558\uc138\uc694';ta.value=inp;ta.addEventListener('input',ev=>inp=ev.target.value);
+    sc.append(lb,qt,ta);
+    if(!revealed){sc.appendChild(mkBtn('\uc815\ub2f5 \ud655\uc778','tinted',()=>{revealed=true;build();},'search'));}
+    else{
+      const ac2=d({background:'var(--bg2)',border:'1px solid '+a+'60',borderRadius:'14px',padding:'16px',marginBottom:'8px'});
+      ac2.innerHTML='<div style="font-size:11px;font-weight:600;color:'+a+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px">\uc815\ub2f5</div>';
+      const at=d({fontSize:'18px',fontWeight:'600'});at.textContent=ex.en;ac2.appendChild(at);sc.appendChild(ac2);
+      const ht=d({fontSize:'13px',color:'var(--t2)',textAlign:'center',marginBottom:'16px'});ht.textContent='\uc2a4\uc2a4\ub85c \ucc44\uc810\ud574\uc8fc\uc138\uc694';sc.appendChild(ht);
+      const bg=d({display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px'});
+      bg.appendChild(mkBtn('\ud2c0\ub838\uc5b4\uc694','red-solid',()=>{scores.push(false);idx++;inp='';revealed=false;build();}));
+      bg.appendChild(mkBtn('\ub9de\uc558\uc5b4\uc694','green-solid',()=>{scores.push(true);idx++;inp='';revealed=false;build();}));
+      sc.appendChild(bg);
+    }
+    const nav=d({display:'flex',justifyContent:'space-between',marginTop:'20px'});
+    const prev=d({fontSize:'14px',color:idx===0?'var(--t3)':'var(--t1)',cursor:idx===0?'default':'pointer',display:'flex',alignItems:'center',gap:'4px'});
+    prev.innerHTML=ico('chevL',16)+'\uc774\uc804';if(idx>0)tap(prev,()=>{idx--;inp='';revealed=false;build();});
+    const next=d({fontSize:'14px',color:idx===examples.length-1?'var(--t3)':'var(--t1)',cursor:idx===examples.length-1?'default':'pointer',display:'flex',alignItems:'center',gap:'4px'});
+    next.innerHTML='\ub2e4\uc74c'+ico('chevR',16);if(idx<examples.length-1)tap(next,()=>{idx++;inp='';revealed=false;build();});
+    nav.append(prev,next);sc.appendChild(nav);w.appendChild(sc);
+  }
+  build();return w;
+}
 
-  const isModal = ['reviewSession', 'unitEdit'].includes(current.screen);
-  const showNav = !isModal;
-  const showLargeTitle = ['home', 'reviewGroups', 'stats', 'settings'].includes(current.screen);
+function scrStats(){
+  const a=ac();const{units}=S;
+  const done=units.filter(u=>u.completed).length,total=units.length,pct=total?done/total:0;
+  const totEx=units.reduce((s,u)=>s+u.examples.length,0);
+  const wk=[4,7,2,9,5,12,3],mx=Math.max(...wk),days=['\uc6d4','\ud654','\uc218','\ubaa9','\uae08','\ud1a0','\uc77c'],tIdx=4;
+  const w=d({flex:'1',overflowY:'auto',paddingBottom:'90px'});w.className='sc';
+  const inn=d({padding:'16px 16px 0'});
+  const mc=d({background:'var(--bg2)',borderRadius:'16px',padding:'20px',border:'1px solid var(--sep)',marginBottom:'16px',display:'flex',gap:'20px',alignItems:'center'});
+  mc.appendChild(mkRing(120,pct,a,9,'<div style="text-align:center"><div style="font-size:24px;font-weight:800">'+Math.round(pct*100)+'%</div><div style="font-size:11px;color:var(--t2)">\uc9c4\ud589\ub960</div></div>'));
+  const mi=d({flex:'1'});mi.innerHTML='<div style="font-size:13px;color:var(--t2);margin-bottom:6px">\uc804\uccb4 \uc9c4\ud589</div><div style="font-size:28px;font-weight:800;letter-spacing:-0.7px"><span style="color:'+a+'">'+done+'</span><span style="color:var(--t2);font-size:20px"> / '+total+'</span></div><div style="font-size:13px;margin-top:4px"><span style="color:var(--green);font-weight:600">'+done+' \uc644\ub8cc</span> <span style="color:var(--t2)">\u00b7 '+(total-done)+' \ub0a8\uc74c</span></div>';
+  mc.appendChild(mi);inn.appendChild(mc);
+  const gr=d({display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginBottom:'16px'});
+  [['barchart','\uc804\uccb4 \uc720\ub2db',total,a,a+'20'],['check','\uc644\ub8cc \uc720\ub2db',done,'var(--green)','rgba(52,199,89,.12)'],['bell','\ub0a8\uc740 \uc720\ub2db',total-done,'var(--yellow)','rgba(255,204,0,.12)'],['more','\uc804\uccb4 \uc608\ubb38',totEx,'var(--t2)','var(--bg3)']].forEach(([ic,lbl,v,c,bg])=>{
+    const ce=d({background:'var(--bg2)',borderRadius:'14px',padding:'16px',border:'1px solid var(--sep)'});
+    const ib=d({width:'32px',height:'32px',borderRadius:'10px',background:bg,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'10px'});ib.innerHTML=ico(ic,16,c);
+    const vl=d({fontSize:'24px',fontWeight:'800',letterSpacing:'-0.5px'});vl.textContent=v;
+    const ll=d({fontSize:'12px',color:'var(--t2)',marginTop:'2px'});ll.textContent=lbl;
+    ce.append(ib,vl,ll);gr.appendChild(ce);
+  });inn.appendChild(gr);
+  const wc=d({background:'var(--bg2)',borderRadius:'16px',padding:'18px 20px',border:'1px solid var(--sep)',marginBottom:'16px'});
+  wc.innerHTML='<div style="font-size:15px;font-weight:700;margin-bottom:4px">\uc774\ubc88 \uc8fc \ud559\uc2b5</div><div style="font-size:13px;color:var(--t2);margin-bottom:18px"><span style="font-size:22px;font-weight:800;color:var(--t1);letter-spacing:-0.5px">30</span> \uac1c\uc758 \uc608\ubb38 \ubcf5\uc2b5</div>';
+  const cr=d({display:'flex',alignItems:'flex-end',gap:'6px',height:'80px'});
+  wk.forEach((v,i)=>{
+    const col=d({flex:'1',display:'flex',flexDirection:'column',alignItems:'center',gap:'6px',height:'100%',justifyContent:'flex-end'});
+    const bar=d({width:'100%',borderRadius:'6px',height:Math.round((v/mx)*100)+'%',background:i===tIdx?a:a+'55',minHeight:'4px',transition:'height 0.6s'});
+    const lbl=d({fontSize:'10px',color:i===tIdx?a:'var(--t2)',fontWeight:i===tIdx?'700':'400'});lbl.textContent=days[i];
+    col.append(bar,lbl);cr.appendChild(col);
+  });wc.appendChild(cr);inn.appendChild(wc);
+  const ul=d({fontSize:'15px',fontWeight:'700',marginBottom:'10px'});ul.textContent='\uc720\ub2db\ubcc4 \uc644\ub8cc \ud604\ud669';inn.appendChild(ul);
+  const uc=d({background:'var(--bg2)',borderRadius:'14px',overflow:'hidden',border:'1px solid var(--sep)'});
+  units.forEach((u,i)=>{
+    const row=d({padding:'12px 16px',borderBottom:i<units.length-1?'1px solid var(--sep)':'none'});
+    const top=d({display:'flex',justifyContent:'space-between',marginBottom:'6px'});
+    const nt=d({fontSize:'14px',fontWeight:'500'});nt.textContent=u.title;
+    const st=d({fontSize:'12px',color:u.completed?'var(--green)':'var(--t2)',fontWeight:'600'});st.textContent=u.completed?'\uc644\ub8cc':'\ubbf8\uc644\ub8cc';
+    top.append(nt,st);
+    const pb=d({height:'4px',background:'var(--bg3)',borderRadius:'999px'});
+    const pf=d({height:'100%',width:u.completed?'100%':'0%',background:u.completed?'var(--green)':a,borderRadius:'999px'});
+    pb.appendChild(pf);row.append(top,pb);uc.appendChild(row);
+  });inn.appendChild(uc);w.appendChild(inn);return w;
+}
 
-  const largeTitles = {
-    home: { title: 'BGIU', large: '안녕하세요,', sub: `${profile.name}님, ${units.filter(u=>!u.completed).length}개의 유닛이 남았어요` },
-    reviewGroups: { title: '복습', large: '복습', sub: '20개 단위로 묶어 차근차근 다져요' },
-    stats: { title: '통계', large: '통계', sub: '꾸준함이 가장 큰 무기예요' },
-    settings: { title: '설정', large: '설정', sub: '앱과 데이터를 관리하세요' },
-  };
+function scrSettings(){
+  const a=ac();const{profile,settings}=S;const isDk=settings.dark;
+  const w=d({flex:'1',overflowY:'auto',paddingBottom:'120px'}); // extra padding for tabbar
+  w.className='sc';
+  const inn=d({padding:'16px 16px 0'});
+  function secLbl(t){const s=d({fontSize:'13px',fontWeight:'500',color:'var(--t2)',letterSpacing:'.4px',textTransform:'uppercase',padding:'0 4px 6px'});s.textContent=t;return s;}
+  function grp(){const g=d({background:'var(--bg2)',borderRadius:'14px',overflow:'hidden',border:'1px solid var(--sep)',marginBottom:'20px'});return g;}
 
-  const lt = largeTitles[current.screen];
+  // profile card
+  const pc=d({background:'var(--bg2)',borderRadius:'16px',padding:'16px 18px',border:'1px solid var(--sep)',marginBottom:'20px',display:'flex',alignItems:'center',gap:'14px'});
+  const photoSrc=S.gUser?.photo||profile.photo||null;
+  pc.appendChild(mkAvatar(profile.name,56,photoSrc));
+  const pi=d({flex:'1'});pi.innerHTML='<div style="font-size:17px;font-weight:700">'+profile.name+'</div><div style="font-size:13px;color:var(--t2)">'+profile.email+'</div>';
+  pi.appendChild(mkPill(profile.level,a,a+'20'));
+  const ei=d({color:'var(--t2)',cursor:'pointer',padding:'4px'});ei.innerHTML=ico('edit',18,'var(--t2)');tap(ei,()=>openProfEdit());
+  pc.append(pi,ei);inn.appendChild(pc);
 
-  return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative', maxWidth: 430, margin: '0 auto', background: 'var(--bg1)' }}>
-      {/* Header for base screens */}
-      {showLargeTitle && lt && (
-        <Header
-          title={lt.title}
-          leading={settings.nav === 'sidebar'
-            ? <div onClick={() => setSidebarOpen(true)} className="tap" style={{ cursor: 'pointer', padding: 4 }}><Icon name="menu" size={22}/></div>
-            : null}
-          trailing={<Avatar name={profile.name} size={30} accent={accent}/>}
-          largeTitle={lt.large}
-          largeSubtitle={lt.sub}
-        />
-      )}
+  // Google Drive Sync Section
+  inn.appendChild(secLbl('\uad6c\uae00 \ub4dc\ub77c\uc774\ube0c \ub3d9\uae30\ud654'));
+  const syncGrp=grp();
 
-      {/* Screen content */}
-      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-        {renderScreen()}
-      </div>
+  if(!S.gUser){
+    // Not logged in
+    const loginRow=d({padding:'16px'});
+    const loginBtn=mkBtn('Google\ub85c \ub85c\uadf8\uc778\ud558\uc5ec \ub3d9\uae30\ud654','google',()=>googleLoginDirect(),'google');
+    loginRow.appendChild(loginBtn);
+    const hint=d({fontSize:'12px',color:'var(--t2)',textAlign:'center',marginTop:'10px'});hint.textContent='\ub370\uc774\ud130\ub97c Google Drive\uc5d0 \uc548\uc804\ud558\uac8c \ubcf4\uad00\ud569\ub2c8\ub2e4';
+    loginRow.appendChild(hint);syncGrp.appendChild(loginRow);
+  }else{
+    // Logged in - show user + sync controls
+    const userRow=d({display:'flex',alignItems:'center',gap:'12px',padding:'14px 16px',borderBottom:'1px solid var(--sep)'});
+    userRow.appendChild(mkAvatar(S.gUser.name,36,S.gUser.photo));
+    const ui=d({flex:'1'});
+    ui.innerHTML='<div style="font-size:15px;font-weight:600">'+S.gUser.name+'</div><div style="font-size:12px;color:var(--t2)">'+S.gUser.email+'</div>';
+    // Sync status dot
+    const statusColors={idle:'var(--bg4)',syncing:a,success:'var(--green)',error:'var(--red)'};
+    const statusLabels={idle:'\ub300\uae30 \uc911',syncing:'\ub3d9\uae30\ud654 \uc911...',success:'\ub3d9\uae30\ud654 \uc644\ub8cc',error:'\ub3d9\uae30\ud654 \uc2e4\ud328'};
+    const sdot=d({width:'8px',height:'8px',borderRadius:'50%',background:statusColors[S.syncStatus]||'var(--bg4)',flexShrink:'0',marginLeft:'4px'});
+    const slbl=d({fontSize:'11px',color:statusColors[S.syncStatus]||'var(--t3)',marginTop:'2px'});slbl.textContent=statusLabels[S.syncStatus]||'';
+    const sinfo=d({display:'flex',alignItems:'center',gap:'4px',marginTop:'3px'});sinfo.append(sdot);
+    const sinfoWrap=d({});sinfoWrap.append(ui.children[0].cloneNode(true));
+    // rebuild ui
+    ui.innerHTML='';
+    const uname=d({fontSize:'15px',fontWeight:'600'});uname.textContent=S.gUser.name;
+    const uemail=d({fontSize:'12px',color:'var(--t2)'});uemail.textContent=S.gUser.email;
+    const ustatus=d({display:'flex',alignItems:'center',gap:'4px',marginTop:'2px'});
+    const udot=d({width:'7px',height:'7px',borderRadius:'50%',background:statusColors[S.syncStatus],flexShrink:'0'});
+    const ulbl=d({fontSize:'11px',color:statusColors[S.syncStatus]});ulbl.textContent=statusLabels[S.syncStatus]||'';
+    ustatus.append(udot,ulbl);ui.append(uname,uemail,ustatus);
+    userRow.append(ui);syncGrp.appendChild(userRow);
 
-      {/* Navigation */}
-      {showNav && settings.nav === 'tabbar' && <TabBar activeTab={activeTab} onTab={goTab} accent={accent}/>}
-      {settings.nav === 'sidebar' && <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} activeTab={activeTab} onTab={goTab} profile={profile} accent={accent}/>}
+    // Sync now button row
+    const syncRow=d({display:'flex',gap:'0',borderBottom:'1px solid var(--sep)'});
+    const syncBtn=d({flex:'1',display:'flex',alignItems:'center',gap:'10px',padding:'13px 16px',cursor:'pointer',borderRight:'1px solid var(--sep)'});
+    syncBtn.innerHTML=ico('cloud',18,a)+'<span style="font-size:14px;font-weight:600;color:'+a+'">\uc9c0\uae08 \ub3d9\uae30\ud654</span>';
+    tap(syncBtn,()=>{
+      if(!S.gUser?.accessToken){requestDriveToken();}else{syncToDrive();}
+    });
+    const pullBtn=d({flex:'1',display:'flex',alignItems:'center',gap:'10px',padding:'13px 16px',cursor:'pointer'});
+    pullBtn.innerHTML=ico('download',18,'var(--t2)')+'<span style="font-size:14px;font-weight:600;color:var(--t2)">\uac00\uc838\uc624\uae30</span>';
+    tap(pullBtn,()=>{
+      if(!S.gUser?.accessToken){requestDriveToken();}else{syncFromDrive();}
+    });
+    syncRow.append(syncBtn,pullBtn);syncGrp.appendChild(syncRow);
 
-      {/* Toast */}
-      <Toast message={toast.msg} visible={toast.visible}/>
-    </div>
-  );
+    // Logout row
+    const logoutRow=d({display:'flex',alignItems:'center',gap:'12px',padding:'13px 16px',cursor:'pointer'});
+    logoutRow.innerHTML=ico('logout',18,'var(--red)')+'<span style="font-size:15px;font-weight:500;color:var(--red)">\uad6c\uae00 \ub85c\uadf8\uc544\uc6c3</span>';
+    tap(logoutRow,()=>googleLogout());syncGrp.appendChild(logoutRow);
+  }
+  inn.appendChild(syncGrp);
+
+  // account
+  inn.appendChild(secLbl('\uacc4\uc815'));
+  const ag=grp();
+  const er=d({display:'flex',alignItems:'center',gap:'12px',padding:'13px 16px',cursor:'pointer'});
+  const ebox=d({width:'32px',height:'32px',borderRadius:'8px',background:'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:'0'});ebox.innerHTML=ico('edit',16,'var(--t2)');
+  const el2=d({flex:'1',fontSize:'16px',fontWeight:'500'});el2.textContent='\ud504\ub85c\ud544 \ud3b8\uc9d1';
+  const ec=d({flexShrink:'0'});ec.innerHTML=ico('chevR',16,'var(--t3)');
+  er.append(ebox,el2,ec);tap(er,()=>openProfEdit());ag.appendChild(er);inn.appendChild(ag);
+
+  // appearance
+  inn.appendChild(secLbl('\ubaa8\uc591'));
+  const apg=grp();
+  const tr=d({padding:'14px 16px',borderBottom:'1px solid var(--sep)'});
+  const tl=d({fontSize:'15px',fontWeight:'500',marginBottom:'12px'});tl.textContent='\ud14c\ub9c8 \uc0c9\uc0c1';
+  const sw=d({display:'flex',gap:'14px',flexWrap:'wrap'});
+  Object.entries(AC).forEach(([key,val])=>{
+    const c=val[isDk?'d':'l'],sel=settings.accent===key;
+    const swEl=d({display:'flex',flexDirection:'column',alignItems:'center',gap:'4px',cursor:'pointer'});
+    const dot=d({width:'36px',height:'36px',borderRadius:'50%',background:c,
+      boxShadow:sel?'0 0 0 3px var(--bg2), 0 0 0 5px '+c:'none',transition:'box-shadow 0.2s',
+      display:'flex',alignItems:'center',justifyContent:'center'});
+    if(sel)dot.innerHTML=ico('check',16,'#fff');
+    const nm=d({fontSize:'10px',fontWeight:'500',color:sel?c:'var(--t2)'});nm.textContent=val.n;
+    swEl.append(dot,nm);tap(swEl,()=>setSetting('accent',key));sw.appendChild(swEl);
+  });tr.append(tl,sw);apg.appendChild(tr);
+  const dr=d({display:'flex',alignItems:'center',gap:'12px',padding:'13px 16px',borderBottom:'1px solid var(--sep)'});
+  const dmb=d({width:'32px',height:'32px',borderRadius:'8px',background:isDk?'#1C1C1E':'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:'0'});dmb.innerHTML=ico('moon',16,isDk?'#fff':'var(--t2)');
+  const dml=d({flex:'1',fontSize:'16px',fontWeight:'500'});dml.textContent='\ub2e4\ud06c \ubaa8\ub4dc';
+  dr.append(dmb,dml,mkToggle(isDk,v=>setSetting('dark',v)));apg.appendChild(dr);
+  const nr=d({padding:'14px 16px'});
+  const nl=d({fontSize:'15px',fontWeight:'500',marginBottom:'10px'});nl.textContent='\ub124\ube44\uac8c\uc774\uc158 \ubc29\uc2dd';
+  const sg=d({display:'flex',background:'var(--bg3)',borderRadius:'10px',padding:'2px'});
+  [['\ud0ed\ubc14','tabbar'],['\uc0ac\uc774\ub4dc\ubc14','sidebar']].forEach(([lbl,v])=>{
+    const opt=d({flex:'1',textAlign:'center',padding:'7px 0',borderRadius:'8px',fontSize:'14px',fontWeight:'600',cursor:'pointer',
+      background:settings.nav===v?'var(--bg2)':'transparent',color:settings.nav===v?'var(--t1)':'var(--t2)',
+      boxShadow:settings.nav===v?'0 1px 4px rgba(0,0,0,.12)':'none',transition:'background 0.18s'});
+    opt.textContent=lbl;tap(opt,()=>setSetting('nav',v));sg.appendChild(opt);
+  });
+  const nh=d({fontSize:'12px',color:'var(--t2)',marginTop:'8px'});nh.textContent='\ud0ed\ubc14\ub294 \ud55c \uc190 \uc870\uc791\uc5d0 \uc720\ub9ac\ud558\uace0, \uc0ac\uc774\ub4dc\ubc14\ub294 \uba54\ub274 \ud655\uc7a5\uc774 \uc26c\uc6cc\uc694.';
+  nr.append(nl,sg,nh);apg.appendChild(nr);inn.appendChild(apg);
+
+  // notifications
+  inn.appendChild(secLbl('\uc54c\ub9bc'));const ng=grp();
+  const nrow=d({display:'flex',alignItems:'center',gap:'12px',padding:'13px 16px'});
+  const nb=d({width:'32px',height:'32px',borderRadius:'8px',background:a+'20',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:'0'});nb.innerHTML=ico('bell',16,a);
+  const nl2=d({flex:'1',fontSize:'16px',fontWeight:'500'});nl2.textContent='\ud559\uc2b5 \uc54c\ub9bc';
+  nrow.append(nb,nl2,mkToggle(false,()=>toast('\uc54c\ub9bc \uae30\ub2a5 \uc900\ube44 \uc911\uc774\uc5d0\uc694')));ng.appendChild(nrow);inn.appendChild(ng);
+
+  // app info
+  inn.appendChild(secLbl('\uc571 \uc815\ubcf4'));const ig=grp();
+  ['\uc774\uc6a9\uc57d\uad00','\uac1c\uc778\uc815\ubcf4 \ucc98\ub9ac\ubc29\uce68','\ub77c\uc774\uc120\uc2a4'].forEach((lbl,i)=>{
+    const row=d({display:'flex',alignItems:'center',padding:'13px 16px',borderBottom:i<2?'1px solid var(--sep)':'none',cursor:'pointer'});
+    const lb=d({flex:'1',fontSize:'16px',fontWeight:'500'});lb.textContent=lbl;
+    const ch=d({flexShrink:'0'});ch.innerHTML=ico('chevR',16,'var(--t3)');
+    row.append(lb,ch);tap(row,()=>toast(lbl+' \uc900\ube44 \uc911'));ig.appendChild(row);
+  });inn.appendChild(ig);
+  const ft=d({textAlign:'center',fontSize:'12px',color:'var(--t3)',marginBottom:'32px'});ft.textContent='BGIU v1.0.0';inn.appendChild(ft);
+  w.appendChild(inn);
+
+  function openProfEdit(){
+    let pn=profile.name,pe=profile.email,pl=profile.level;
+    const sh=mkSheet('\ud504\ub85c\ud544 \ud3b8\uc9d1',cl=>{
+      const c=d({padding:'0 16px 32px'}); // extra bottom padding so save btn visible
+      const av=d({display:'flex',justifyContent:'center',marginBottom:'20px'});
+      const curPhoto=S.gUser?.photo||profile.photo||null;
+      av.appendChild(mkAvatar(pn,72,curPhoto));c.appendChild(av);
+      [['\uc774\ub984','text',v=>{pn=v;}],['\uc774\uba54\uc77c','email',v=>pe=v]].forEach(([lbl,type,fn])=>{
+        const w2=d({marginBottom:'14px'});const l=d({fontSize:'12px',color:'var(--t2)',marginBottom:'5px'});l.textContent=lbl;
+        const inp=e('input',{width:'100%',background:'var(--bg3)',borderRadius:'10px',padding:'12px 14px',fontSize:'15px',color:'var(--t1)'});
+        inp.type=type;inp.placeholder=lbl;inp.value=lbl==='\uc774\ub984'?pn:pe;inp.addEventListener('input',ev=>fn(ev.target.value));
+        w2.append(l,inp);c.appendChild(w2);
+      });
+      const lw=d({marginBottom:'24px'});const ll=d({fontSize:'12px',color:'var(--t2)',marginBottom:'5px'});ll.textContent='\ub808\ubca8';
+      const llist=d({display:'flex',flexDirection:'column',gap:'6px'});
+      ['Beginner','Pre-Intermediate','Intermediate'].forEach(lv=>{
+        const opt=d({display:'flex',alignItems:'center',gap:'10px',padding:'12px 14px',borderRadius:'10px',cursor:'pointer',
+          background:pl===lv?a+'20':'var(--bg3)',border:'1.5px solid '+(pl===lv?a:'transparent')});
+        const dot=d({width:'18px',height:'18px',borderRadius:'50%',background:pl===lv?a:'var(--bg4)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:'0'});
+        if(pl===lv)dot.innerHTML=ico('check',10,'#fff');
+        const lt=d({fontSize:'15px',fontWeight:'500'});lt.textContent=lv;opt.append(dot,lt);
+        tap(opt,()=>{
+          pl=lv;llist.querySelectorAll('div').forEach(od=>{if(od.style.borderRadius==='10px'){od.style.background='var(--bg3)';od.style.border='1.5px solid transparent';const dd=od.querySelector('div');if(dd){dd.style.background='var(--bg4)';dd.innerHTML='';}}});
+          opt.style.background=a+'20';opt.style.border='1.5px solid '+a;dot.style.background=a;dot.innerHTML=ico('check',10,'#fff');
+        });llist.appendChild(opt);
+      });lw.append(ll,llist);c.appendChild(lw);
+      // Save button - clearly visible above sheet bottom
+      const saveBtn=mkBtn('\uc800\uc7a5','primary',()=>{saveProfile({name:pn,email:pe,level:pl,photo:profile.photo});cl();});
+      c.appendChild(saveBtn);
+      return c;
+    });sh.open();
+  }
+  return w;
+}
+
+// ===== TAB BAR =====
+function buildTabs(){
+  const a=ac();const{activeTab}=S;
+  const bar=d({position:'fixed',bottom:'0',left:'0',right:'0',zIndex:'200',
+    background:'var(--bar)',backdropFilter:'blur(22px) saturate(180%)',WebkitBackdropFilter:'blur(22px) saturate(180%)',
+    borderTop:'1px solid var(--sep)',display:'flex',flexDirection:'column'});
+  const row=d({display:'flex',maxWidth:'430px',margin:'0 auto',width:'100%',padding:'8px 0 20px'});
+  [['home','home','\uc720\ub2db'],['review','review','\ubcf5\uc2b5'],['stats','barchart','\ud1b5\uacc4'],['settings','cog','\uc124\uc815']].forEach(([tab,ic,lbl])=>{
+    const active=activeTab===tab,col=active?a:'var(--t2)';
+    const t=d({flex:'1',display:'flex',flexDirection:'column',alignItems:'center',gap:'3px',cursor:'pointer'});
+    t.innerHTML=ico(ic,22,col)+'<span style="font-size:10px;font-weight:'+(active?'600':'500')+';color:'+col+'">'+lbl+'</span>';
+    tap(t,()=>goTab(tab));row.appendChild(t);
+  });bar.appendChild(row);return bar;
+}
+
+// ===== SIDEBAR =====
+function buildSidebar(){
+  const a=ac();const{activeTab,sidebarOpen,profile}=S;
+  const ov=d({position:'fixed',inset:'0',background:'rgba(0,0,0,0.4)',zIndex:'300',opacity:sidebarOpen?'1':'0',transition:'opacity 0.26s',pointerEvents:sidebarOpen?'auto':'none'});
+  const sb=d({position:'fixed',top:'0',left:'0',bottom:'0',width:'280px',zIndex:'301',background:'var(--bg2)',
+    boxShadow:'6px 0 24px rgba(0,0,0,.22)',transform:sidebarOpen?'translateX(0)':'translateX(-100%)',
+    transition:'transform 0.26s cubic-bezier(.32,.72,.32,1)',display:'flex',flexDirection:'column',padding:'60px 16px 32px'});
+  const pr=d({display:'flex',alignItems:'center',gap:'12px',marginBottom:'32px'});
+  const photo=S.gUser?.photo||profile.photo||null;
+  pr.appendChild(mkAvatar(profile.name,56,photo));
+  const pi=d({});pi.innerHTML='<div style="font-size:16px;font-weight:700">'+profile.name+'</div><div style="font-size:13px;color:var(--t2)">'+profile.email+'</div>';
+  pi.appendChild(mkPill(profile.level,a,a+'20'));pr.appendChild(pi);sb.appendChild(pr);
+  const nav=d({flex:'1',display:'flex',flexDirection:'column',gap:'4px'});
+  [['home','home','\uc720\ub2db'],['review','review','\ubcf5\uc2b5'],['stats','barchart','\ud1b5\uacc4'],['settings','cog','\uc124\uc815']].forEach(([tab,ic,lbl])=>{
+    const active=activeTab===tab,col=active?a:'var(--t2)';
+    const row=d({display:'flex',alignItems:'center',gap:'14px',padding:'12px 16px',borderRadius:'12px',
+      background:active?a+'20':'transparent',color:active?a:'var(--t1)',fontWeight:active?'600':'500',fontSize:'16px',cursor:'pointer'});
+    row.innerHTML=ico(ic,22,col)+'<span>'+lbl+'</span>';
+    tap(row,()=>{goTab(tab);setState({sidebarOpen:false});});nav.appendChild(row);
+  });sb.appendChild(nav);
+  const ft=d({fontSize:'12px',color:'var(--t3)',textAlign:'center'});ft.textContent='BGIU \u00b7 \ubca0\uc774\uc9c1 \uadf8\ub798\ub9c8 \uc778 \uc720\uc988';sb.appendChild(ft);
+  ov.addEventListener('click',()=>setState({sidebarOpen:false}));
+  const frag=document.createDocumentFragment();frag.append(ov,sb);return frag;
+}
+
+// ===== RENDER =====
+const LT={
+  home:{t:'BGIU',l:'\uc548\ub155\ud558\uc138\uc694,',sub:()=>S.profile.name+'\ub2d8, '+S.units.filter(u=>!u.completed).length+'\uac1c\uc758 \uc720\ub2db\uc774 \ub0a8\uc558\uc5b4\uc694'},
+  reviewGroups:{t:'\ubcf5\uc2b5',l:'\ubcf5\uc2b5',sub:()=>'20\uac1c \ub2e8\uc704\ub85c \ubb36\uc5b4 \ucc28\uadfc\ucc28\uadfc \ub2e4\uc838\uc694'},
+  stats:{t:'\ud1b5\uacc4',l:'\ud1b5\uacc4',sub:()=>'\uaf3d\uc900\ud568\uc774 \uac00\uc7a5 \ud070 \ubb34\uae30\uc608\uc694'},
+  settings:{t:'\uc124\uc815',l:'\uc124\uc815',sub:()=>'\uc571\uacfc \ub370\uc774\ud130\ub97c \uad00\ub9ac\ud558\uc138\uc694'},
 };
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+function render(){
+  applyTheme();
+  const app=document.getElementById('A');app.innerHTML='';
+  const{stack,activeTab,settings}=S;const cur=stack[stack.length-1];const a=ac();
+  const wrap=d({height:'100%',display:'flex',flexDirection:'column',position:'relative',maxWidth:'430px',margin:'0 auto',background:'var(--bg1)',overflow:'hidden'});
+  const BASE=['home','reviewGroups','stats','settings'];
+  const isBase=BASE.includes(cur.screen);const lt=LT[cur.screen];
+  if(isBase&&lt){
+    const hdr=d({position:'sticky',top:'0',zIndex:'100',background:'var(--bar)',backdropFilter:'blur(22px) saturate(180%)',WebkitBackdropFilter:'blur(22px) saturate(180%)',borderBottom:'1px solid var(--sep)'});
+    const hrow=d({display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',height:'52px'});
+    const lead=d({minWidth:'60px'});
+    if(settings.nav==='sidebar'){const mb=d({cursor:'pointer',padding:'4px'});mb.innerHTML=ico('menu',22,'var(--t1)');tap(mb,()=>setState({sidebarOpen:true}));lead.appendChild(mb);}
+    const cen=d({fontSize:'17px',fontWeight:'600',letterSpacing:'-0.4px'});cen.textContent=lt.t;
+    const trail=d({minWidth:'60px',display:'flex',justifyContent:'flex-end',alignItems:'center',gap:'8px'});
+    // Sync dot in header when logged in
+    if(S.gUser){
+      const sdotColors={idle:'var(--bg4)',syncing:a,success:'var(--green)',error:'var(--red)'};
+      const sdot=d({width:'8px',height:'8px',borderRadius:'50%',background:sdotColors[S.syncStatus]||'var(--bg4)',flexShrink:'0'});
+      trail.appendChild(sdot);
+    }
+    const photo=S.gUser?.photo||S.profile.photo||null;
+    trail.appendChild(mkAvatar(S.profile.name,30,photo));
+    hrow.append(lead,cen,trail);hdr.appendChild(hrow);
+    const lg=d({padding:'4px 20px 14px'});
+    const lt1=d({fontSize:'30px',fontWeight:'800',letterSpacing:'-0.8px',lineHeight:'1.15'});lt1.textContent=lt.l;
+    const lt2=d({fontSize:'14px',color:'var(--t2)',marginTop:'3px'});lt2.textContent=lt.sub();
+    lg.append(lt1,lt2);hdr.appendChild(lg);wrap.appendChild(hdr);
+  }
+  const content=d({flex:'1',overflow:'hidden',display:'flex',flexDirection:'column',position:'relative'});
+  let scr;
+  switch(cur.screen){
+    case 'home':scr=scrHome();break;
+    case 'unitDetail':scr=scrDetail(cur.params?.id);break;
+    case 'unitEdit':scr=scrEdit(cur.params?.id);break;
+    case 'reviewGroups':scr=scrReviewGroups();break;
+    case 'reviewGroup':scr=scrGroupDetail(cur.params?.groupId);break;
+    case 'reviewSession':scr=scrSession(cur.params?.id);break;
+    case 'stats':scr=scrStats();break;
+    case 'settings':scr=scrSettings();break;
+    default:scr=d({padding:'20px'},'404');
+  }
+  if(scr)content.appendChild(scr);wrap.appendChild(content);
+  const isModal=['reviewSession','unitEdit'].includes(cur.screen);
+  if(!isModal&&settings.nav==='tabbar')wrap.appendChild(buildTabs());
+  if(settings.nav==='sidebar')wrap.appendChild(buildSidebar());
+  const tst=d({position:'fixed',bottom:'90px',left:'50%',transform:'translateX(-50%) translateY('+(S.toast.visible?'0':'12px')+')',
+    background:'rgba(0,0,0,0.82)',color:'#fff',borderRadius:'999px',padding:'10px 20px',fontSize:'14px',fontWeight:'500',
+    whiteSpace:'nowrap',opacity:S.toast.visible?'1':'0',transition:'opacity 0.22s, transform 0.22s',zIndex:'9999',pointerEvents:'none'});
+  tst.textContent=S.toast.msg;wrap.appendChild(tst);
+  app.appendChild(wrap);
+}
+
+// Init GIS after SDK loads
+window.addEventListener('load',()=>{
+  setTimeout(()=>{if(window.google&&window.google.accounts)initGIS();},500);
+});
+
+applyTheme();render();
 </script>
 </body>
 </html>

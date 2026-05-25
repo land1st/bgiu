@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BGIU — 베이직 그래마 인 유즈</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --accent: #00C7BE;
+  --accent-dark: #63E6E2;
+  --bg1: #F2F2F7;
+  --bg2: #FFFFFF;
+  --bg3: #E5E5EA;
+  --bg4: #D1D1D6;
+  --text1: #000000;
+  --text2: rgba(60,60,67,0.60);
+  --text3: rgba(60,60,67,0.30);
+  --sep: rgba(60,60,67,0.12);
+  --green: #34C759;
+  --red: #FF3B30;
+  --yellow: #FFCC00;
+  --bar-bg: rgba(248,248,250,0.82);
+  --shadow-today: 0 8px 24px rgba(0,199,190,0.40);
+  --radius-card: 14px;
+  --radius-lg: 18px;
+  --radius-btn: 12px;
+  --transition: 0.12s cubic-bezier(.3,.7,.4,1);
+  --sheet-transition: 0.28s cubic-bezier(.32,.72,.32,1);
+}
+[data-dark="true"] {
+  --bg1: #000000;
+  --bg2: #1C1C1E;
+  --bg3: #2C2C2E;
+  --bg4: #3A3A3C;
+  --text1: #FFFFFF;
+  --text2: rgba(235,235,245,0.60);
+  --text3: rgba(235,235,245,0.30);
+  --sep: rgba(84,84,88,0.65);
+  --bar-bg: rgba(28,28,30,0.78);
+}
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
+  background: var(--bg1);
+  color: var(--text1);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+/* Scrollable areas */
+.scroll-area {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+/* Tap animation */
+.tap { transition: transform var(--transition); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.tap:active { transform: scale(0.97); }
+button { border: none; background: none; font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+input, textarea { font-family: inherit; outline: none; border: none; background: none; }
+textarea { resize: none; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ─── ACCENT COLORS ───────────────────────────────────────────────
+const ACCENTS = {
+  mint:   { light: '#00C7BE', dark: '#63E6E2', name: '민트' },
+  blue:   { light: '#007AFF', dark: '#0A84FF', name: '블루' },
+  indigo: { light: '#5856D6', dark: '#5E5CE6', name: '인디고' },
+  purple: { light: '#AF52DE', dark: '#BF5AF2', name: '퍼플' },
+  pink:   { light: '#FF2D55', dark: '#FF375F', name: '핑크' },
+  orange: { light: '#FF9500', dark: '#FF9F0A', name: '오렌지' },
+};
+
+// ─── SAMPLE DATA ─────────────────────────────────────────────────
+const SAMPLE_UNITS = [
+  { id: 'u_1', title: 'Present Simple', subtitle: '현재 단순시제', summary: '반복적인 행동이나 일반적인 사실을 표현할 때 사용한다. 주어가 3인칭 단수일 때 동사에 -s/-es를 붙인다.', examples: [{ en: 'She works at a hospital.', ko: '그녀는 병원에서 일한다.' }, { en: 'I drink coffee every morning.', ko: '나는 매일 아침 커피를 마신다.' }, { en: 'The sun rises in the east.', ko: '태양은 동쪽에서 뜬다.' }, { en: 'Do you speak English?', ko: '영어를 하시나요?' }, { en: 'He doesn\'t like spicy food.', ko: '그는 매운 음식을 좋아하지 않는다.' }], completed: true, createdAt: Date.now() - 7 * 86400000 },
+  { id: 'u_2', title: 'Present Continuous', subtitle: '현재 진행형', summary: '지금 이 순간 진행 중인 동작을 표현한다. be동사(am/is/are) + 동사-ing 형태로 쓴다.', examples: [{ en: 'I am studying English now.', ko: '나는 지금 영어를 공부하고 있다.' }, { en: 'She is cooking dinner.', ko: '그녀는 저녁을 요리하고 있다.' }, { en: 'They are playing soccer.', ko: '그들은 축구를 하고 있다.' }, { en: 'Is it raining outside?', ko: '밖에 비가 오고 있나요?' }], completed: true, createdAt: Date.now() - 6 * 86400000 },
+  { id: 'u_3', title: 'Past Simple', subtitle: '과거 단순시제', summary: '과거의 완료된 동작이나 상태를 표현한다. 규칙 동사는 -ed를 붙이고, 불규칙 동사는 형태가 변한다.', examples: [{ en: 'I visited my grandmother last week.', ko: '나는 지난주에 할머니를 방문했다.' }, { en: 'She went to Paris last year.', ko: '그녀는 작년에 파리에 갔다.' }, { en: 'Did you watch the game?', ko: '경기를 봤나요?' }, { en: 'He didn\'t come to the party.', ko: '그는 파티에 오지 않았다.' }], completed: true, createdAt: Date.now() - 5 * 86400000 },
+  { id: 'u_4', title: 'Past Continuous', subtitle: '과거 진행형', summary: '과거의 특정 시점에 진행 중이던 일을 말할 때 사용한다. was/were + -ing 형태.', examples: [{ en: 'I was sleeping at 11 last night.', ko: '나는 어젯밤 11시에 자고 있었다.' }, { en: 'She was cooking when I called her.', ko: '내가 전화했을 때 그녀는 요리하고 있었다.' }, { en: 'They were waiting for the bus.', ko: '그들은 버스를 기다리고 있었다.' }], completed: false, createdAt: Date.now() - 4 * 86400000 },
+  { id: 'u_5', title: 'Present Perfect', subtitle: '현재 완료', summary: '과거에 시작된 일이 현재까지 영향을 미칠 때 사용한다. have/has + 과거분사 형태.', examples: [{ en: 'I have never been to London.', ko: '나는 런던에 가본 적이 없다.' }, { en: 'She has just finished her homework.', ko: '그녀는 방금 숙제를 마쳤다.' }, { en: 'Have you eaten lunch yet?', ko: '점심을 아직 먹지 않았나요?' }, { en: 'He has lived here for 10 years.', ko: '그는 10년 동안 여기 살았다.' }], completed: false, createdAt: Date.now() - 3 * 86400000 },
+  { id: 'u_6', title: 'Future with will', subtitle: '미래 시제 (will)', summary: '미래의 의지나 예측을 표현할 때 will을 사용한다. will + 동사원형 형태.', examples: [{ en: 'I will call you tomorrow.', ko: '내일 전화할게요.' }, { en: 'It will rain this afternoon.', ko: '오늘 오후에 비가 올 것이다.' }, { en: 'Will you help me with this?', ko: '이것 좀 도와주시겠어요?' }], completed: false, createdAt: Date.now() - 2 * 86400000 },
+  { id: 'u_7', title: 'Can / Could', subtitle: '조동사 can과 could', summary: '능력, 가능성, 허가를 표현할 때 사용한다. can은 현재, could는 과거 또는 더 공손한 표현.', examples: [{ en: 'I can swim very well.', ko: '나는 수영을 아주 잘 할 수 있다.' }, { en: 'Could you open the window?', ko: '창문을 열어주시겠어요?' }, { en: 'She couldn\'t come yesterday.', ko: '그녀는 어제 올 수 없었다.' }, { en: 'Can I use your phone?', ko: '전화기를 써도 될까요?' }], completed: false, createdAt: Date.now() - 86400000 },
+  { id: 'u_8', title: 'Articles: a / an / the', subtitle: '관사: a, an, the', summary: '부정관사(a/an)는 처음 언급하거나 불특정한 것에, 정관사(the)는 이미 알고 있거나 특정한 것에 사용한다.', examples: [{ en: 'I saw a dog in the park.', ko: '나는 공원에서 개 한 마리를 봤다.' }, { en: 'She is an engineer.', ko: '그녀는 엔지니어다.' }, { en: 'The book on the table is mine.', ko: '테이블 위의 책은 내 것이다.' }, { en: 'I don\'t have a car.', ko: '나는 차가 없다.' }], completed: false, createdAt: Date.now() },
+];
+
+const DEFAULT_PROFILE = { name: '김민준', email: 'minjun@example.com', level: 'Pre-Intermediate' };
+const DEFAULT_SETTINGS = { nav: 'tabbar', dark: false, accent: 'mint' };
+
+// ─── LOCAL STORAGE ────────────────────────────────────────────────
+function loadStorage(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch { return fallback; }
+}
+function saveStorage(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
+// ─── ICONS ───────────────────────────────────────────────────────
+const Icon = ({ name, size = 24, color = 'currentColor', strokeWidth = 1.8 }) => {
+  const s = { width: size, height: size, flexShrink: 0 };
+  const paths = {
+    menu: <><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>,
+    back: <><polyline points="15,18 9,12 15,6"/></>,
+    plus: <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
+    trash: <><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1 2-2h4a2,2 0 0,1 2,2v2"/></>,
+    edit: <><path d="M11,4H4a2,2 0 0,0-2,2v14a2,2 0 0,0 2,2h14a2,2 0 0,0 2-2v-7"/><path d="M18.5,2.5a2.121,2.121 0 0,1 3,3L12,15l-4,1 1-4 9.5-9.5z"/></>,
+    check: <><polyline points="20,6 9,17 4,12"/></>,
+    more: <><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></>,
+    search: <><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
+    shuffle: <><polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21,16 21,21 16,21"/><line x1="4" y1="4" x2="9" y2="9"/></>,
+    refresh: <><polyline points="23,4 23,10 17,10"/><path d="M20.49,15a9,9 0 1,1-2.12-9.36L23,10"/></>,
+    upload: <><path d="M21,15v4a2,2 0 0,1-2,2H5a2,2 0 0,1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></>,
+    download: <><path d="M21,15v4a2,2 0 0,1-2,2H5a2,2 0 0,1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></>,
+    user: <><path d="M20,21v-2a4,4 0 0,0-4-4H8a4,4 0 0,0-4,4v2"/><circle cx="12" cy="7" r="4"/></>,
+    bell: <><path d="M18,8A6,6 0 0,0 6,8c0,7-3,9-3,9h18s-3-2-3-9"/><path d="M13.73,21a2,2 0 0,1-3.46,0"/></>,
+    home: <><path d="M3,9l9-7 9,7v11a2,2 0 0,1-2,2H5a2,2 0 0,1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></>,
+    review: <><polyline points="1,4 1,10 7,10"/><path d="M3.51,15a9,9 0 1,0 .49-4.5"/></>,
+    stats: <><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>,
+    settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4,15a1.65,1.65 0 0,0 .33,1.82l.06.06a2,2 0 0,1-2.83,2.83l-.06-.06a1.65,1.65 0 0,0-1.82-.33 1.65,1.65 0 0,0-1,1.51V21a2,2 0 0,1-4,0v-.09A1.65,1.65 0 0,0 9,19.4a1.65,1.65 0 0,0-1.82.33l-.06.06a2,2 0 0,1-2.83-2.83l.06-.06A1.65,1.65 0 0,0 4.68,15a1.65,1.65 0 0,0-1.51-1H3a2,2 0 0,1 0-4h.09A1.65,1.65 0 0,0 4.6,9a1.65,1.65 0 0,0-.33-1.82l-.06-.06a2,2 0 0,1 2.83-2.83l.06.06A1.65,1.65 0 0,0 9,4.68a1.65,1.65 0 0,0 1-1.51V3a2,2 0 0,1 4,0v.09a1.65,1.65 0 0,0 1,1.51 1.65,1.65 0 0,0 1.82-.33l.06-.06a2,2 0 0,1 2.83,2.83l-.06.06A1.65,1.65 0 0,0 19.4,9a1.65,1.65 0 0,0 1.51,1H21a2,2 0 0,1 0,4h-.09a1.65,1.65 0 0,0-1.51,1z"/></>,
+    moon: <><path d="M21,12.79A9,9 0 1,1 11.21,3 7,7 0 0,0 21,12.79z"/></>,
+    chevron_right: <><polyline points="9,18 15,12 9,6"/></>,
+    chevron_left: <><polyline points="15,18 9,12 15,6"/></>,
+    x: <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
+    google: null,
+  };
+  if (name === 'google') return (
+    <svg style={s} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+  );
+  return (
+    <svg style={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+      {paths[name]}
+    </svg>
+  );
+};
+
+// ─── PROGRESS RING ────────────────────────────────────────────────
+const ProgressRing = ({ size, progress, color, strokeWidth = 4, children }) => {
+  const r = (size - strokeWidth) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ * (1 - progress);
+  return (
+    <div style={{ width: size, height: size, position: 'relative', flexShrink: 0 }}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--bg3)" strokeWidth={strokeWidth}/>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={strokeWidth}
+          strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(.3,.7,.4,1)' }}/>
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// ─── AVATAR ───────────────────────────────────────────────────────
+const Avatar = ({ name, size = 36, accent }) => {
+  const initial = name ? name[0] : '?';
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: `linear-gradient(135deg, ${accent}cc, ${accent})`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: '#fff', fontSize: size * 0.4, fontWeight: 700, flexShrink: 0,
+    }}>{initial}</div>
+  );
+};
+
+// ─── BADGE / PILL ─────────────────────────────────────────────────
+const Pill = ({ children, color, bg, style: sx }) => (
+  <span style={{
+    display: 'inline-flex', alignItems: 'center',
+    padding: '2px 8px', borderRadius: 999,
+    fontSize: 11, fontWeight: 600, letterSpacing: 0.4,
+    color: color || 'var(--accent)', background: bg || 'rgba(0,199,190,0.12)',
+    ...sx,
+  }}>{children}</span>
+);
+
+// ─── SWITCH TOGGLE ────────────────────────────────────────────────
+const Toggle = ({ value, onChange }) => (
+  <div onClick={() => onChange(!value)} className="tap" style={{
+    width: 51, height: 31, borderRadius: 999, flexShrink: 0,
+    background: value ? 'var(--green)' : 'var(--bg4)',
+    position: 'relative', transition: 'background 0.22s cubic-bezier(.32,.72,.32,1)',
+  }}>
+    <div style={{
+      position: 'absolute', top: 2, left: value ? 22 : 2,
+      width: 27, height: 27, borderRadius: '50%', background: '#fff',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.20)',
+      transition: 'left 0.22s cubic-bezier(.32,.72,.32,1)',
+    }}/>
+  </div>
+);
+
+// ─── SEGMENTED CONTROL ────────────────────────────────────────────
+const SegmentedControl = ({ options, value, onChange }) => (
+  <div style={{
+    display: 'flex', background: 'var(--bg3)', borderRadius: 10, padding: 2,
+  }}>
+    {options.map(opt => (
+      <div key={opt.value} onClick={() => onChange(opt.value)} className="tap" style={{
+        flex: 1, textAlign: 'center', padding: '7px 0', borderRadius: 8, fontSize: 14, fontWeight: 600,
+        background: value === opt.value ? 'var(--bg2)' : 'transparent',
+        color: value === opt.value ? 'var(--text1)' : 'var(--text2)',
+        boxShadow: value === opt.value ? '0 1px 4px rgba(0,0,0,0.12)' : 'none',
+        transition: 'background 0.18s, box-shadow 0.18s',
+      }}>{opt.label}</div>
+    ))}
+  </div>
+);
+
+// ─── TOAST ────────────────────────────────────────────────────────
+const Toast = ({ message, visible }) => (
+  <div style={{
+    position: 'fixed', bottom: 100, left: '50%', transform: `translateX(-50%) translateY(${visible ? 0 : 12}px)`,
+    background: 'rgba(0,0,0,0.82)', color: '#fff', borderRadius: 999,
+    padding: '10px 20px', fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap',
+    opacity: visible ? 1 : 0, transition: 'opacity 0.22s, transform 0.22s',
+    zIndex: 9999, pointerEvents: 'none',
+  }}>{message}</div>
+);
+
+// ─── HEADER ───────────────────────────────────────────────────────
+const Header = ({ title, leading, trailing, largeTitle, largeSubtitle }) => (
+  <div style={{
+    position: 'sticky', top: 0, zIndex: 100,
+    background: 'var(--bar-bg)', backdropFilter: 'blur(22px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(22px) saturate(180%)',
+    borderBottom: `1px solid var(--sep)`,
+  }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', height: 52 }}>
+      <div style={{ minWidth: 60 }}>{leading}</div>
+      <span style={{ fontSize: 17, fontWeight: 600, letterSpacing: -0.4 }}>{title}</span>
+      <div style={{ minWidth: 60, display: 'flex', justifyContent: 'flex-end' }}>{trailing}</div>
+    </div>
+    {largeTitle && (
+      <div style={{ padding: '4px 20px 14px' }}>
+        <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: -0.8, lineHeight: 1.15 }}>{largeTitle}</div>
+        {largeSubtitle && <div style={{ fontSize: 14, color: 'var(--text2)', marginTop: 3 }}>{largeSubtitle}</div>}
+      </div>
+    )}
+  </div>
+);
+
+// ─── BOTTOM SHEET ─────────────────────────────────────────────────
+const Sheet = ({ visible, onClose, title, children }) => (
+  <>
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 500,
+      opacity: visible ? 1 : 0, pointerEvents: visible ? 'auto' : 'none',
+      transition: 'opacity 0.22s',
+    }}/>
+    <div style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 501,
+      background: 'var(--bg2)', borderRadius: '20px 20px 0 0',
+      boxShadow: '0 -8px 24px rgba(0,0,0,0.18)',
+      transform: visible ? 'translateY(0)' : 'translateY(100%)',
+      transition: `transform var(--sheet-transition)`,
+      maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
+        <div style={{ width: 36, height: 4, borderRadius: 999, background: 'var(--bg4)' }}/>
+      </div>
+      {title && <div style={{ fontSize: 17, fontWeight: 700, textAlign: 'center', padding: '4px 20px 12px', letterSpacing: -0.3 }}>{title}</div>}
+      <div className="scroll-area" style={{ flex: 1, padding: '0 0 env(safe-area-inset-bottom, 20px)' }}>{children}</div>
+    </div>
+  </>
+);
+
+// ─── TAB BAR ─────────────────────────────────────────────────────
+const TabBar = ({ activeTab, onTab, accent }) => {
+  const tabs = [
+    { id: 'home', icon: 'home', label: '유닛' },
+    { id: 'review', icon: 'review', label: '복습' },
+    { id: 'stats', icon: 'stats', label: '통계' },
+    { id: 'settings', icon: 'settings', label: '설정' },
+  ];
+  return (
+    <div style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 200,
+      background: 'var(--bar-bg)', backdropFilter: 'blur(22px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(22px) saturate(180%)',
+      borderTop: '1px solid var(--sep)',
+      display: 'flex', padding: '8px 0 calc(8px + env(safe-area-inset-bottom, 12px))',
+    }}>
+      {tabs.map(t => {
+        const active = activeTab === t.id;
+        return (
+          <div key={t.id} onClick={() => onTab(t.id)} className="tap" style={{
+            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+            color: active ? accent : 'var(--text2)',
+          }}>
+            <Icon name={t.icon} size={22} color={active ? accent : 'var(--text2)'}/>
+            <span style={{ fontSize: 10, fontWeight: active ? 600 : 500 }}>{t.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// ─── SIDEBAR ─────────────────────────────────────────────────────
+const Sidebar = ({ open, onClose, activeTab, onTab, profile, accent }) => {
+  const tabs = [
+    { id: 'home', icon: 'home', label: '유닛' },
+    { id: 'review', icon: 'review', label: '복습' },
+    { id: 'stats', icon: 'stats', label: '통계' },
+    { id: 'settings', icon: 'settings', label: '설정' },
+  ];
+  return (
+    <>
+      <div onClick={onClose} style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 300,
+        opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none', transition: 'opacity 0.26s',
+      }}/>
+      <div style={{
+        position: 'fixed', top: 0, left: 0, bottom: 0, width: 280, zIndex: 301,
+        background: 'var(--bg2)', boxShadow: '6px 0 24px rgba(0,0,0,0.22)',
+        transform: open ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.26s cubic-bezier(.32,.72,.32,1)',
+        display: 'flex', flexDirection: 'column', padding: '60px 16px 32px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
+          <Avatar name={profile.name} size={56} accent={accent}/>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 700 }}>{profile.name}</div>
+            <div style={{ fontSize: 13, color: 'var(--text2)' }}>{profile.email}</div>
+            <Pill style={{ marginTop: 4 }}>{profile.level}</Pill>
+          </div>
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {tabs.map(t => {
+            const active = activeTab === t.id;
+            return (
+              <div key={t.id} onClick={() => { onTab(t.id); onClose(); }} className="tap" style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                padding: '12px 16px', borderRadius: 12,
+                background: active ? `${accent}20` : 'transparent',
+                color: active ? accent : 'var(--text1)',
+                fontWeight: active ? 600 : 500, fontSize: 16,
+              }}>
+                <Icon name={t.icon} size={22} color={active ? accent : 'var(--text2)'}/>
+                {t.label}
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text3)', textAlign: 'center' }}>BGIU · 베이직 그래마 인 유즈</div>
+      </div>
+    </>
+  );
+};
+
+// ─── GROUPED LIST ─────────────────────────────────────────────────
+const GroupedList = ({ children, label, style: sx }) => (
+  <div style={{ marginBottom: 20, ...sx }}>
+    {label && <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 32px 6px' }}>{label}</div>}
+    <div style={{ background: 'var(--bg2)', borderRadius: 14, marginHorizontal: 16, overflow: 'hidden', border: '1px solid var(--sep)' }}>
+      {children}
+    </div>
+  </div>
+);
+
+const ListRow = ({ icon, iconBg, label, sublabel, detail, chevron = true, onClick, labelColor, detailColor }) => (
+  <div onClick={onClick} className={onClick ? 'tap' : ''} style={{
+    display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', minHeight: 44,
+    borderBottom: '1px solid var(--sep)', cursor: onClick ? 'pointer' : 'default',
+  }}>
+    {icon && <div style={{ width: 32, height: 32, borderRadius: 8, background: iconBg || 'var(--bg3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</div>}
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ fontSize: 16, fontWeight: 500, color: labelColor || 'var(--text1)', letterSpacing: -0.3 }}>{label}</div>
+      {sublabel && <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 1 }}>{sublabel}</div>}
+    </div>
+    {detail && <div style={{ fontSize: 14, color: detailColor || 'var(--text2)', flexShrink: 0 }}>{detail}</div>}
+    {chevron && onClick && <Icon name="chevron_right" size={18} color="var(--text3)"/>}
+  </div>
+);
+
+// ─── BUTTON ───────────────────────────────────────────────────────
+const Btn = ({ children, variant = 'primary', size = 'lg', onClick, disabled, icon, style: sx }) => {
+  const accent = 'var(--accent)';
+  const styles = {
+    primary: { background: accent, color: '#fff' },
+    tinted: { background: `color-mix(in srgb, var(--accent) 15%, transparent)`, color: accent },
+    gray: { background: 'var(--bg3)', color: 'var(--text1)' },
+    red: { background: '#FF3B3020', color: 'var(--red)' },
+    green: { background: 'var(--green)', color: '#fff' },
+    'red-solid': { background: 'var(--red)', color: '#fff' },
+    'green-solid': { background: 'var(--green)', color: '#fff' },
+  };
+  const sizes = {
+    lg: { padding: '15px 20px', fontSize: 17, fontWeight: 600, borderRadius: 14 },
+    md: { padding: '11px 16px', fontSize: 15, fontWeight: 600, borderRadius: 12 },
+    sm: { padding: '7px 14px', fontSize: 13, fontWeight: 600, borderRadius: 10 },
+  };
+  return (
+    <button onClick={onClick} disabled={disabled} className="tap" style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+      width: '100%', border: 'none', cursor: disabled ? 'default' : 'pointer',
+      opacity: disabled ? 0.4 : 1,
+      ...styles[variant], ...sizes[size], letterSpacing: -0.3, ...sx,
+    }}>
+      {icon && <Icon name={icon} size={18} color="currentColor"/>}
+      {children}
+    </button>
+  );
+};
+
+// ══════════════════════════════════════════════════════════════
+// HOME SCREEN
+// ══════════════════════════════════════════════════════════════
+const HomeScreen = ({ units, profile, accent, onUnitClick, onAddUnit, onToggleComplete, showToast }) => {
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 6;
+  const todayUnit = units.find(u => !u.completed) ?? null;
+  const completed = units.filter(u => u.completed).length;
+  const total = units.length;
+  const pct = total > 0 ? Math.round(completed / total * 100) : 0;
+  const totalPages = Math.ceil(units.length / PER_PAGE);
+  const pageUnits = units.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  return (
+    <div className="scroll-area" style={{ flex: 1, paddingBottom: 90 }}>
+      {/* Today Card */}
+      <div style={{ padding: '16px 16px 0' }}>
+        {todayUnit ? (
+          <div onClick={() => onUnitClick(todayUnit.id)} className="tap" style={{
+            background: accent, borderRadius: 20, padding: '20px 20px',
+            position: 'relative', overflow: 'hidden', marginBottom: 16,
+            boxShadow: `0 8px 24px ${accent}60`,
+          }}>
+            <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }}/>
+            <div style={{ position: 'absolute', bottom: -30, right: 30, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.10)' }}/>
+            <Pill style={{ background: 'rgba(255,255,255,0.25)', color: '#fff', marginBottom: 10 }}>오늘의 학습</Pill>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: -0.5, marginBottom: 4 }}>{todayUnit.title}</div>
+            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.80)', marginBottom: 8 }}>{todayUnit.subtitle}</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: 14 }}>{todayUnit.summary}</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>학습 시작하기 →</div>
+          </div>
+        ) : (
+          <div style={{ background: accent, borderRadius: 20, padding: '24px 20px', textAlign: 'center', marginBottom: 16 }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🎉</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>모든 유닛을 완료했어요!</div>
+          </div>
+        )}
+
+        {/* Mini Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 24 }}>
+          {[
+            { label: '완료', value: completed, color: accent },
+            { label: '남은 유닛', value: total - completed, color: 'var(--text1)' },
+            { label: '진행률', value: `${pct}%`, color: accent },
+          ].map(s => (
+            <div key={s.label} style={{ background: 'var(--bg2)', borderRadius: 14, padding: '14px 12px', textAlign: 'center', border: '1px solid var(--sep)' }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: s.color, letterSpacing: -0.5 }}>{s.value}</div>
+              <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 3 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Unit List Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.4 }}>유닛 목록</div>
+          <div onClick={onAddUnit} className="tap" style={{ fontSize: 14, fontWeight: 600, color: accent, cursor: 'pointer' }}>+ 새 유닛</div>
+        </div>
+      </div>
+
+      {/* Unit List */}
+      <div style={{ padding: '0 16px' }}>
+        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 16 }}>
+          {pageUnits.map((unit, i) => (
+            <div key={unit.id} onClick={() => onUnitClick(unit.id)} className="tap" style={{
+              display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', minHeight: 58,
+              borderBottom: i < pageUnits.length - 1 ? '1px solid var(--sep)' : 'none',
+              cursor: 'pointer',
+            }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+                background: unit.completed ? accent : 'var(--bg3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {unit.completed
+                  ? <Icon name="check" size={16} color="#fff" strokeWidth={2.5}/>
+                  : <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text2)' }}>{units.indexOf(unit) + 1 < 10 ? `0${units.indexOf(unit)+1}` : units.indexOf(unit)+1}</span>
+                }
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 16, fontWeight: 500, letterSpacing: -0.3 }}>{unit.title}</div>
+                <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>{unit.subtitle} · 예문 {unit.examples.length}개</div>
+              </div>
+              <Icon name="chevron_right" size={18} color="var(--text3)"/>
+            </div>
+          ))}
+          {units.length === 0 && (
+            <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--text2)' }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>📚</div>
+              <div style={{ fontSize: 15 }}>유닛이 없어요. 새 유닛을 추가해보세요!</div>
+            </div>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
+            <div onClick={() => setPage(p => Math.max(1, p - 1))} className="tap" style={{ padding: 8, color: page === 1 ? 'var(--text3)' : 'var(--text1)' }}>
+              <Icon name="chevron_left" size={18}/>
+            </div>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+              <div key={p} onClick={() => setPage(p)} className="tap" style={{
+                width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: p === page ? accent : 'var(--bg2)', color: p === page ? '#fff' : 'var(--text1)',
+                fontSize: 14, fontWeight: 600, border: `1px solid ${p === page ? 'transparent' : 'var(--sep)'}`,
+              }}>{p}</div>
+            ))}
+            <div onClick={() => setPage(p => Math.min(totalPages, p + 1))} className="tap" style={{ padding: 8, color: page === totalPages ? 'var(--text3)' : 'var(--text1)' }}>
+              <Icon name="chevron_right" size={18}/>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ══════════════════════════════════════════════════════════════
+// UNIT DETAIL
+// ══════════════════════════════════════════════════════════════
+const UnitDetailScreen = ({ unit, accent, onBack, onEdit, onDelete, onToggleComplete, onReview }) => {
+  const [showMore, setShowMore] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  if (!unit) return null;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Header
+        title="유닛"
+        leading={<div onClick={onBack} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--accent)', cursor: 'pointer' }}><Icon name="back" size={20} color="var(--accent)"/></div>}
+        trailing={<div onClick={() => setShowMore(true)} className="tap" style={{ color: 'var(--text2)', cursor: 'pointer', padding: 4 }}><Icon name="more" size={22}/></div>}
+      />
+      <div className="scroll-area" style={{ flex: 1, padding: '20px 16px', paddingBottom: 100 }}>
+        {/* Badges */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+          <Pill color={unit.completed ? 'var(--green)' : accent} bg={unit.completed ? '#34C75920' : `${accent}20`}>
+            {unit.completed ? '완료' : '진행 중'}
+          </Pill>
+          <Pill>예문 {unit.examples.length}</Pill>
+        </div>
+        <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.6, marginBottom: 4 }}>{unit.title}</div>
+        <div style={{ fontSize: 15, color: 'var(--text2)', marginBottom: 20 }}>{unit.subtitle}</div>
+
+        {/* Summary Card */}
+        <div style={{ background: 'var(--bg2)', borderRadius: 14, padding: 16, marginBottom: 20, border: '1px solid var(--sep)' }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: accent, letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 8 }}>핵심 요약</div>
+          <div style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--text1)' }}>{unit.summary}</div>
+        </div>
+
+        {/* Examples */}
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 10 }}>예문 ({unit.examples.length})</div>
+        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 20 }}>
+          {unit.examples.map((ex, i) => (
+            <div key={i} style={{ display: 'flex', gap: 12, padding: '14px 16px', borderBottom: i < unit.examples.length - 1 ? '1px solid var(--sep)' : 'none' }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: accent, minWidth: 22, letterSpacing: -0.1 }}>{String(i+1).padStart(2,'0')}</span>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.4 }}>{ex.en}</div>
+                <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 3 }}>{ex.ko}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Complete Toggle */}
+        <div onClick={onToggleComplete} className="tap" style={{
+          display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 14, marginBottom: 16,
+          background: unit.completed ? '#34C75915' : 'var(--bg2)',
+          border: `1px solid ${unit.completed ? 'var(--green)' : 'var(--sep)'}`,
+          cursor: 'pointer',
+        }}>
+          <div style={{
+            width: 26, height: 26, borderRadius: '50%',
+            background: unit.completed ? 'var(--green)' : 'transparent',
+            border: `2px solid ${unit.completed ? 'var(--green)' : 'var(--bg4)'}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
+            {unit.completed && <Icon name="check" size={14} color="#fff" strokeWidth={2.5}/>}
+          </div>
+          <div style={{ flex: 1, fontSize: 16, fontWeight: 500, color: unit.completed ? 'var(--green)' : 'var(--text1)' }}>
+            {unit.completed ? '완료됨' : '완료로 표시하기'}
+          </div>
+          {!unit.completed && <span style={{ fontSize: 12, color: 'var(--text3)' }}>눌러서 완료</span>}
+        </div>
+
+        {/* Review CTA */}
+        <Btn onClick={onReview} icon="shuffle">이 유닛 복습하기</Btn>
+      </div>
+
+      {/* More Sheet */}
+      <Sheet visible={showMore} onClose={() => setShowMore(false)} title="더보기">
+        <div style={{ padding: '8px 16px 20px' }}>
+          <div onClick={() => { setShowMore(false); onEdit(); }} className="tap" style={{
+            display: 'flex', alignItems: 'center', gap: 14, padding: '16px 0', borderBottom: '1px solid var(--sep)', cursor: 'pointer',
+          }}>
+            <Icon name="edit" size={20} color="var(--text1)"/>
+            <span style={{ fontSize: 16, fontWeight: 500 }}>유닛 편집</span>
+          </div>
+          <div onClick={() => { setShowMore(false); setShowDeleteConfirm(true); }} className="tap" style={{
+            display: 'flex', alignItems: 'center', gap: 14, padding: '16px 0', cursor: 'pointer',
+          }}>
+            <Icon name="trash" size={20} color="var(--red)"/>
+            <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--red)' }}>유닛 삭제</span>
+          </div>
+        </div>
+      </Sheet>
+      {/* Delete Confirm */}
+      <Sheet visible={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="유닛 삭제">
+        <div style={{ padding: '8px 16px 20px' }}>
+          <p style={{ textAlign: 'center', color: 'var(--text2)', fontSize: 14, marginBottom: 20 }}>정말 이 유닛을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다.</p>
+          <Btn variant="red-solid" onClick={() => { setShowDeleteConfirm(false); onDelete(); }}>삭제</Btn>
+          <div style={{ height: 8 }}/>
+          <Btn variant="gray" onClick={() => setShowDeleteConfirm(false)}>취소</Btn>
+        </div>
+      </Sheet>
+    </div>
+  );
+};
+
+// ══════════════════════════════════════════════════════════════
+// UNIT EDIT / CREATE
+// ══════════════════════════════════════════════════════════════
+const UnitEditScreen = ({ unit, onSave, onCancel }) => {
+  const [title, setTitle] = useState(unit?.title || '');
+  const [subtitle, setSubtitle] = useState(unit?.subtitle || '');
+  const [summary, setSummary] = useState(unit?.summary || '');
+  const [examples, setExamples] = useState(unit?.examples || [{ en: '', ko: '' }]);
+
+  const canSave = title.trim() && summary.trim();
+  const handleSave = () => {
+    if (!canSave) return;
+    const clean = examples.filter(e => e.en.trim() || e.ko.trim());
+    onSave({ title: title.trim(), subtitle: subtitle.trim(), summary: summary.trim(), examples: clean.length ? clean : [] });
+  };
+  const addEx = () => setExamples(e => [...e, { en: '', ko: '' }]);
+  const removeEx = i => setExamples(e => e.filter((_, idx) => idx !== i));
+  const updateEx = (i, field, val) => setExamples(e => e.map((ex, idx) => idx === i ? { ...ex, [field]: val } : ex));
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Header
+        title={unit ? '유닛 편집' : '새 유닛'}
+        leading={<div onClick={onCancel} className="tap" style={{ fontSize: 16, color: 'var(--accent)', cursor: 'pointer' }}>취소</div>}
+        trailing={<div onClick={handleSave} className="tap" style={{ fontSize: 16, fontWeight: 600, color: canSave ? 'var(--accent)' : 'var(--text3)', cursor: 'pointer' }}>저장</div>}
+      />
+      <div className="scroll-area" style={{ flex: 1, padding: '20px 16px', paddingBottom: 80 }}>
+        {/* Basic Info */}
+        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 0 6px 4px' }}>기본 정보</div>
+        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 20 }}>
+          {[
+            { label: '제목', value: title, set: setTitle, placeholder: 'Present Simple', required: true },
+            { label: '부제목', value: subtitle, set: setSubtitle, placeholder: '현재 단순시제' },
+          ].map((f, i) => (
+            <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 16px', borderBottom: '1px solid var(--sep)' }}>
+              <span style={{ fontSize: 14, color: 'var(--text2)', minWidth: 52, lineHeight: '48px' }}>{f.label}{f.required && <span style={{ color: 'var(--accent)' }}> *</span>}</span>
+              <input value={f.value} onChange={e => f.set(e.target.value)} placeholder={f.placeholder}
+                style={{ flex: 1, fontSize: 15, padding: '14px 0', color: 'var(--text1)', background: 'none' }}/>
+            </div>
+          ))}
+          <div style={{ padding: '12px 16px' }}>
+            <div style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 6 }}>핵심 요약 <span style={{ color: 'var(--accent)' }}>*</span></div>
+            <textarea value={summary} onChange={e => setSummary(e.target.value)}
+              placeholder="이 문법의 핵심을 간략히 설명해주세요..." rows={3}
+              style={{ width: '100%', fontSize: 14, lineHeight: 1.6, color: 'var(--text1)', background: 'none', outline: 'none', border: 'none' }}/>
+          </div>
+        </div>
+
+        {/* Examples */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 0 6px 4px' }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase' }}>예문 ({examples.length})</div>
+        </div>
+        {examples.map((ex, i) => (
+          <div key={i} style={{ background: 'var(--bg2)', borderRadius: 14, padding: '14px 16px', border: '1px solid var(--sep)', marginBottom: 10, position: 'relative' }}>
+            <div onClick={() => removeEx(i)} className="tap" style={{ position: 'absolute', top: 10, right: 10, color: 'var(--red)', cursor: 'pointer', padding: 4 }}>
+              <Icon name="trash" size={16} color="var(--red)"/>
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>영문</div>
+            <input value={ex.en} onChange={e => updateEx(i, 'en', e.target.value)} placeholder="English sentence..."
+              style={{ width: '100%', fontSize: 15, fontWeight: 500, color: 'var(--text1)', marginBottom: 10, paddingRight: 32 }}/>
+            <div style={{ height: 1, background: 'var(--sep)', marginBottom: 10 }}/>
+            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>한국어</div>
+            <input value={ex.ko} onChange={e => updateEx(i, 'ko', e.target.value)} placeholder="한국어 번역..."
+              style={{ width: '100%', fontSize: 13, color: 'var(--text2)' }}/>
+          </div>
+        ))}
+        <Btn variant="tinted" onClick={addEx} icon="plus">예문 추가</Btn>
+      </div>
+    </div>
+  );
+};
+
+// ══════════════════════════════════════════════════════════════
+// REVIEW GROUPS
+// ══════════════════════════════════════════════════════════════
+const ReviewGroupsScreen = ({ units, accent, onGroupClick }) => {
+  const groupSize = 20;
+  const groups = [];
+  for (let i = 0; i < Math.max(1, units.length); i += groupSize) {
+    const slice = units.slice(i, i + groupSize);
+    const gCompleted = slice.filter(u => u.completed).length;
+    groups.push({ id: i / groupSize + 1, units: slice, completed: gCompleted, total: slice.length, from: i + 1, to: i + slice.length });
+  }
+  return (
+    <div className="scroll-area" style={{ flex: 1, paddingBottom: 90 }}>
+      <div style={{ padding: '16px 16px 0' }}>
+        {groups.map(g => {
+          const pct = g.total > 0 ? g.completed / g.total : 0;
+          return (
+            <div key={g.id} onClick={() => onGroupClick(g.id)} className="tap" style={{
+              background: 'var(--bg2)', borderRadius: 16, padding: '18px 18px 14px', marginBottom: 14,
+              border: '1px solid var(--sep)', cursor: 'pointer',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                <div>
+                  <Pill style={{ marginBottom: 6 }}>그룹 {String(g.id).padStart(2,'0')}</Pill>
+                  <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5, marginBottom: 3 }}>유닛 {g.from}–{g.to}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text2)' }}>{g.completed} / {g.total} 완료</div>
+                </div>
+                <ProgressRing size={56} progress={pct} color={accent} strokeWidth={5}>
+                  <span style={{ fontSize: 12, fontWeight: 700 }}>{Math.round(pct * 100)}%</span>
+                </ProgressRing>
+              </div>
+              <div style={{ height: 6, background: 'var(--bg3)', borderRadius: 999, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct * 100}%`, background: accent, borderRadius: 999, transition: 'width 0.6s cubic-bezier(.3,.7,.4,1)' }}/>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// ══════════════════════════════════════════════════════════════
+// REVIEW GROUP DETAIL
+// ══════════════════════════════════════════════════════════════
+const ReviewGroupDetailScreen = ({ groupId, units, accent, onBack, onUnitClick, onReview }) => {
+  const groupSize = 20;
+  const start = (groupId - 1) * groupSize;
+  const slice = units.slice(start, start + groupSize);
+  const completed = slice.filter(u => u.completed).length;
+  const pct = slice.length > 0 ? completed / slice.length : 0;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Header title={`그룹 ${String(groupId).padStart(2,'0')}`}
+        leading={<div onClick={onBack} className="tap" style={{ display: 'flex', alignItems: 'center', color: 'var(--accent)', cursor: 'pointer' }}><Icon name="back" size={20} color="var(--accent)"/><span style={{ fontSize: 15, marginLeft: 2 }}>복습</span></div>}/>
+      <div className="scroll-area" style={{ flex: 1, padding: '16px', paddingBottom: 90 }}>
+        {/* Summary Card */}
+        <div style={{ background: 'var(--bg2)', borderRadius: 16, padding: 18, border: '1px solid var(--sep)', marginBottom: 20, display: 'flex', gap: 16, alignItems: 'center' }}>
+          <ProgressRing size={84} progress={pct} color={accent} strokeWidth={6}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 16, fontWeight: 800 }}>{Math.round(pct*100)}%</div>
+            </div>
+          </ProgressRing>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 700 }}>그룹 {String(groupId).padStart(2,'0')}</div>
+            <div style={{ fontSize: 13, color: 'var(--text2)' }}>유닛 {start+1} – {start+slice.length}</div>
+            <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 2 }}>{completed} 완료 · {slice.length - completed} 남음</div>
+          </div>
+        </div>
+        {/* Unit Rows */}
+        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)' }}>
+          {slice.map((unit, i) => (
+            <div key={unit.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderBottom: i < slice.length - 1 ? '1px solid var(--sep)' : 'none' }}>
+              <div onClick={() => onUnitClick(unit.id)} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, cursor: 'pointer' }}>
+                <div style={{ width: 28, height: 28, borderRadius: 9, background: unit.completed ? 'var(--green)' : 'var(--bg3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {unit.completed ? <Icon name="check" size={14} color="#fff" strokeWidth={2.5}/> : <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)' }}>{start+i+1 < 10 ? `0${start+i+1}` : start+i+1}</span>}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 500 }}>{unit.title}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text2)' }}>{unit.subtitle} · 예문 {unit.examples.length}개</div>
+                </div>
+              </div>
+              <div onClick={() => onReview(unit.id)} className="tap" style={{
+                padding: '6px 12px', borderRadius: 999, background: `${accent}20`, color: accent,
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
+              }}>복습</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ══════════════════════════════════════════════════════════════
+// REVIEW SESSION
+// ══════════════════════════════════════════════════════════════
+const ReviewSessionScreen = ({ unit, accent, onClose, onComplete }) => {
+  const examples = unit.examples;
+  const [idx, setIdx] = useState(0);
+  const [input, setInput] = useState('');
+  const [revealed, setRevealed] = useState(false);
+  const [scores, setScores] = useState([]);
+  const [done, setDone] = useState(false);
+
+  const current = examples[idx];
+  const progress = (idx) / examples.length;
+
+  const handleReveal = () => setRevealed(true);
+  const handleScore = correct => {
+    const newScores = [...scores, correct];
+    setScores(newScores);
+    if (idx < examples.length - 1) {
+      setIdx(i => i + 1);
+      setInput('');
+      setRevealed(false);
+    } else {
+      setDone(true);
+    }
+  };
+
+  if (done) {
+    const correct = scores.filter(Boolean).length;
+    const total = examples.length;
+    const pct = Math.round(correct / total * 100);
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <Header title={unit.title}
+          leading={<div onClick={onClose} className="tap" style={{ fontSize: 15, color: 'var(--accent)', cursor: 'pointer' }}>닫기</div>}/>
+        <div className="scroll-area" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 24px', paddingBottom: 90 }}>
+          <ProgressRing size={160} progress={pct/100} color={pct >= 70 ? 'var(--green)' : accent} strokeWidth={10}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 36, fontWeight: 800 }}>{pct}%</div>
+              <div style={{ fontSize: 12, color: 'var(--text2)' }}>정답률</div>
+            </div>
+          </ProgressRing>
+          <div style={{ fontSize: 24, fontWeight: 800, marginTop: 24, marginBottom: 6 }}>수고하셨어요!</div>
+          <div style={{ fontSize: 15, color: 'var(--text2)', marginBottom: 28 }}>{unit.title}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, width: '100%', marginBottom: 28 }}>
+            {[{ label: '정답', val: correct, col: 'var(--green)' }, { label: '오답', val: total - correct, col: 'var(--red)' }, { label: '전체', val: total, col: 'var(--text1)' }].map(s => (
+              <div key={s.label} style={{ background: 'var(--bg2)', borderRadius: 14, padding: '14px 0', textAlign: 'center', border: '1px solid var(--sep)' }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: s.col }}>{s.val}</div>
+                <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 3 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <Btn variant="tinted" onClick={() => { setIdx(0); setInput(''); setRevealed(false); setScores([]); setDone(false); }}>다시 복습하기</Btn>
+            <Btn onClick={() => onComplete(pct)}>복습 완료</Btn>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Header
+        title={unit.title}
+        leading={<div onClick={onClose} className="tap" style={{ fontSize: 15, color: 'var(--accent)', cursor: 'pointer' }}>닫기</div>}
+        trailing={<span style={{ fontSize: 14, color: 'var(--text2)', fontWeight: 500 }}>{idx+1} / {examples.length}</span>}
+      />
+      {/* Progress bar */}
+      <div style={{ height: 4, background: 'var(--bg3)' }}>
+        <div style={{ height: '100%', width: `${(idx / examples.length) * 100}%`, background: accent, transition: 'width 0.4s' }}/>
+      </div>
+      <div className="scroll-area" style={{ flex: 1, padding: '24px 16px', paddingBottom: 90 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 14 }}>한국어를 영문으로 옮겨보세요</div>
+        <div style={{ fontSize: 24, fontWeight: 700, lineHeight: 1.35, letterSpacing: -0.5, marginBottom: 20 }}>{current.ko}</div>
+        <textarea value={input} onChange={e => setInput(e.target.value)}
+          placeholder="여기에 영문을 입력하세요" rows={3}
+          style={{
+            width: '100%', background: 'var(--bg2)', border: '1px solid var(--sep)', borderRadius: 14,
+            padding: 16, fontSize: 15, lineHeight: 1.6, color: 'var(--text1)',
+            marginBottom: 16, resize: 'none',
+          }}/>
+        {!revealed ? (
+          <Btn variant="tinted" onClick={handleReveal} icon="search">정답 확인</Btn>
+        ) : (
+          <>
+            <div style={{ background: 'var(--bg2)', border: `1px solid ${accent}60`, borderRadius: 14, padding: 16, marginBottom: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: accent, letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 8 }}>정답</div>
+              <div style={{ fontSize: 18, fontWeight: 600 }}>{current.en}</div>
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text2)', textAlign: 'center', marginBottom: 16 }}>스스로 채점해주세요</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <Btn variant="red-solid" onClick={() => handleScore(false)}>틀렸어요</Btn>
+              <Btn variant="green-solid" onClick={() => handleScore(true)}>맞았어요</Btn>
+            </div>
+          </>
+        )}
+        {/* Prev/Next */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
+          <div onClick={() => { if (idx > 0) { setIdx(i => i - 1); setInput(''); setRevealed(false); } }} className="tap"
+            style={{ fontSize: 14, color: idx === 0 ? 'var(--text3)' : 'var(--text1)', cursor: idx === 0 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Icon name="chevron_left" size={16}/> 이전
+          </div>
+          <div onClick={() => { if (idx < examples.length - 1) { setIdx(i => i + 1); setInput(''); setRevealed(false); } }} className="tap"
+            style={{ fontSize: 14, color: idx === examples.length - 1 ? 'var(--text3)' : 'var(--text1)', cursor: idx === examples.length - 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            다음 <Icon name="chevron_right" size={16}/>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ══════════════════════════════════════════════════════════════
+// STATS SCREEN
+// ══════════════════════════════════════════════════════════════
+const StatsScreen = ({ units, accent }) => {
+  const completed = units.filter(u => u.completed).length;
+  const total = units.length;
+  const pct = total > 0 ? completed / total : 0;
+  const totalExamples = units.reduce((a, u) => a + u.examples.length, 0);
+  const weekData = [4, 7, 2, 9, 5, 12, 3];
+  const maxW = Math.max(...weekData);
+  const days = ['월', '화', '수', '목', '금', '토', '일'];
+  const todayIdx = 4; // Friday
+  return (
+    <div className="scroll-area" style={{ flex: 1, paddingBottom: 90 }}>
+      <div style={{ padding: '16px 16px 0' }}>
+        {/* Main Progress Card */}
+        <div style={{ background: 'var(--bg2)', borderRadius: 16, padding: 20, border: '1px solid var(--sep)', marginBottom: 16, display: 'flex', gap: 20, alignItems: 'center' }}>
+          <ProgressRing size={120} progress={pct} color={accent} strokeWidth={9}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 24, fontWeight: 800 }}>{Math.round(pct*100)}%</div>
+              <div style={{ fontSize: 11, color: 'var(--text2)' }}>진행률</div>
+            </div>
+          </ProgressRing>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 6 }}>전체 진행</div>
+            <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.7 }}>
+              <span style={{ color: accent }}>{completed}</span>
+              <span style={{ color: 'var(--text2)', fontSize: 20 }}> / {total}</span>
+            </div>
+            <div style={{ fontSize: 13, marginTop: 4 }}>
+              <span style={{ color: 'var(--green)', fontWeight: 600 }}>{completed} 완료</span>
+              <span style={{ color: 'var(--text2)' }}> · {total - completed} 남음</span>
+            </div>
+          </div>
+        </div>
+        {/* Mini Stats 2x2 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+          {[
+            { icon: 'stats', label: '전체 유닛', val: total, col: accent, bg: `${accent}15` },
+            { icon: 'check', label: '완료 유닛', val: completed, col: 'var(--green)', bg: '#34C75915' },
+            { icon: 'bell', label: '남은 유닛', val: total - completed, col: 'var(--yellow)', bg: '#FFCC0015' },
+            { icon: 'more', label: '전체 예문', val: totalExamples, col: 'var(--text2)', bg: 'var(--bg3)' },
+          ].map(s => (
+            <div key={s.label} style={{ background: 'var(--bg2)', borderRadius: 14, padding: 16, border: '1px solid var(--sep)' }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+                <Icon name={s.icon} size={16} color={s.col}/>
+              </div>
+              <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: -0.5 }}>{s.val}</div>
+              <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+        {/* Weekly Chart */}
+        <div style={{ background: 'var(--bg2)', borderRadius: 16, padding: '18px 20px', border: '1px solid var(--sep)', marginBottom: 16 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>이번 주 학습</div>
+          <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 18 }}><span style={{ fontSize: 22, fontWeight: 800, color: 'var(--text1)', letterSpacing: -0.5 }}>30</span> 개의 예문 복습</div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 80 }}>
+            {weekData.map((v, i) => (
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, height: '100%', justifyContent: 'flex-end' }}>
+                <div style={{
+                  width: '100%', borderRadius: 6,
+                  height: `${(v / maxW) * 100}%`,
+                  background: i === todayIdx ? accent : `${accent}55`,
+                  minHeight: 4, transition: 'height 0.6s cubic-bezier(.3,.7,.4,1)',
+                }}/>
+                <span style={{ fontSize: 10, color: i === todayIdx ? accent : 'var(--text2)', fontWeight: i === todayIdx ? 700 : 400 }}>{days[i]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Unit progress list */}
+        <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>유닛별 완료 현황</div>
+        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)' }}>
+          {units.map((u, i) => (
+            <div key={u.id} style={{ padding: '12px 16px', borderBottom: i < units.length - 1 ? '1px solid var(--sep)' : 'none' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span style={{ fontSize: 14, fontWeight: 500 }}>{u.title}</span>
+                <span style={{ fontSize: 12, color: u.completed ? 'var(--green)' : 'var(--text2)', fontWeight: 600 }}>{u.completed ? '완료' : '미완료'}</span>
+              </div>
+              <div style={{ height: 4, background: 'var(--bg3)', borderRadius: 999 }}>
+                <div style={{ height: '100%', width: u.completed ? '100%' : '0%', background: u.completed ? 'var(--green)' : accent, borderRadius: 999 }}/>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ══════════════════════════════════════════════════════════════
+// SETTINGS SCREEN
+// ══════════════════════════════════════════════════════════════
+const SettingsScreen = ({ profile, settings, accent, onSettingChange, onProfileSave, showToast }) => {
+  const [editProfile, setEditProfile] = useState(false);
+  const [name, setName] = useState(profile.name);
+  const [email, setEmail] = useState(profile.email);
+  const [level, setLevel] = useState(profile.level);
+  const isDark = settings.dark;
+  const accentColor = ACCENTS[settings.accent][isDark ? 'dark' : 'light'];
+  const levels = ['Beginner', 'Pre-Intermediate', 'Intermediate'];
+
+  return (
+    <div className="scroll-area" style={{ flex: 1, paddingBottom: 90 }}>
+      <div style={{ padding: '16px 16px 0' }}>
+        {/* Profile Card */}
+        <div style={{ background: 'var(--bg2)', borderRadius: 16, padding: '16px 18px', border: '1px solid var(--sep)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+          <Avatar name={profile.name} size={56} accent={accentColor}/>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 17, fontWeight: 700 }}>{profile.name}</div>
+            <div style={{ fontSize: 13, color: 'var(--text2)' }}>{profile.email}</div>
+            <Pill color={accentColor} bg={`${accentColor}20`} style={{ marginTop: 5 }}>{profile.level}</Pill>
+          </div>
+          <div onClick={() => setEditProfile(true)} className="tap" style={{ color: 'var(--text2)', cursor: 'pointer', padding: 4 }}>
+            <Icon name="edit" size={18}/>
+          </div>
+        </div>
+
+        {/* Account */}
+        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 4px 6px' }}>계정</div>
+        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 20 }}>
+          <div onClick={() => showToast('Google 로그인 준비 중이에요')} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: '1px solid var(--sep)', cursor: 'pointer' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fff', border: '1px solid var(--sep)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="google" size={18}/></div>
+            <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>Google로 로그인</div>
+            <Icon name="google" size={20}/>
+            <Icon name="chevron_right" size={16} color="var(--text3)"/>
+          </div>
+          <div onClick={() => setEditProfile(true)} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', cursor: 'pointer' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--bg3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="edit" size={16} color="var(--text2)"/></div>
+            <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>프로필 편집</div>
+            <Icon name="chevron_right" size={16} color="var(--text3)"/>
+          </div>
+        </div>
+
+        {/* Appearance */}
+        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 4px 6px' }}>모양</div>
+        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 20 }}>
+          {/* Theme Color */}
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--sep)' }}>
+            <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 12 }}>테마 색상</div>
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+              {Object.entries(ACCENTS).map(([key, val]) => {
+                const c = val[isDark ? 'dark' : 'light'];
+                const selected = settings.accent === key;
+                return (
+                  <div key={key} onClick={() => onSettingChange('accent', key)} className="tap" style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer',
+                  }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: '50%', background: c,
+                      boxShadow: selected ? `0 0 0 3px var(--bg2), 0 0 0 5px ${c}` : 'none',
+                      transition: 'box-shadow 0.2s',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {selected && <Icon name="check" size={16} color="#fff" strokeWidth={2.5}/>}
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 500, color: selected ? c : 'var(--text2)' }}>{val.name}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          {/* Dark Mode */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: '1px solid var(--sep)' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: isDark ? '#1C1C1E' : 'var(--bg3)', border: isDark ? '1px solid #3A3A3C' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Icon name="moon" size={16} color={isDark ? '#fff' : 'var(--text2)'}/>
+            </div>
+            <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>다크 모드</div>
+            <Toggle value={isDark} onChange={v => onSettingChange('dark', v)}/>
+          </div>
+          {/* Navigation */}
+          <div style={{ padding: '14px 16px' }}>
+            <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 10 }}>네비게이션 방식</div>
+            <SegmentedControl
+              options={[{ label: '하단 탭바', value: 'tabbar' }, { label: '사이드바', value: 'sidebar' }]}
+              value={settings.nav} onChange={v => onSettingChange('nav', v)}/>
+            <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 8 }}>탭바는 한 손 조작에 유리하고, 사이드바는 메뉴 확장이 쉬워요.</div>
+          </div>
+        </div>
+
+        {/* Data */}
+        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 4px 6px' }}>데이터</div>
+        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 20 }}>
+          <div onClick={() => showToast('데이터를 내보내는 중...')} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: '1px solid var(--sep)', cursor: 'pointer' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#34C75920', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="upload" size={16} color="var(--green)"/></div>
+            <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>내보내기 (JSON)</div>
+            <Icon name="chevron_right" size={16} color="var(--text3)"/>
+          </div>
+          <div onClick={() => showToast('데이터 가져오기 준비 중이에요')} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', cursor: 'pointer' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: `${accentColor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="download" size={16} color={accentColor}/></div>
+            <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>가져오기</div>
+            <Icon name="chevron_right" size={16} color="var(--text3)"/>
+          </div>
+        </div>
+
+        {/* Notifications */}
+        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 4px 6px' }}>알림</div>
+        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: `${accentColor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="bell" size={16} color={accentColor}/></div>
+            <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>학습 알림</div>
+            <Toggle value={false} onChange={() => showToast('알림 기능 준비 중이에요')}/>
+          </div>
+        </div>
+
+        {/* App Info */}
+        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', letterSpacing: 0.4, textTransform: 'uppercase', padding: '0 4px 6px' }}>앱 정보</div>
+        <div style={{ background: 'var(--bg2)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sep)', marginBottom: 12 }}>
+          {['이용약관', '개인정보 처리방침', '라이선스'].map((item, i) => (
+            <div key={item} onClick={() => showToast(`${item} 준비 중`)} className="tap" style={{ display: 'flex', alignItems: 'center', padding: '13px 16px', borderBottom: i < 2 ? '1px solid var(--sep)' : 'none', cursor: 'pointer' }}>
+              <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>{item}</div>
+              <Icon name="chevron_right" size={16} color="var(--text3)"/>
+            </div>
+          ))}
+        </div>
+        <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text3)', marginBottom: 24 }}>BGIU v1.0.0</div>
+      </div>
+
+      {/* Profile Edit Sheet */}
+      <Sheet visible={editProfile} onClose={() => setEditProfile(false)} title="프로필 편집">
+        <div style={{ padding: '0 16px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+            <Avatar name={name} size={72} accent={accentColor}/>
+          </div>
+          {[
+            { label: '이름', value: name, set: setName, placeholder: '이름' },
+            { label: '이메일', value: email, set: setEmail, placeholder: 'email@example.com' },
+          ].map(f => (
+            <div key={f.label} style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 5 }}>{f.label}</div>
+              <input value={f.value} onChange={e => f.set(e.target.value)} placeholder={f.placeholder}
+                style={{ width: '100%', background: 'var(--bg3)', borderRadius: 10, padding: '12px 14px', fontSize: 15, color: 'var(--text1)' }}/>
+            </div>
+          ))}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 5 }}>레벨</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {levels.map(l => (
+                <div key={l} onClick={() => setLevel(l)} className="tap" style={{
+                  display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 10,
+                  background: level === l ? `${accentColor}20` : 'var(--bg3)',
+                  border: `1.5px solid ${level === l ? accentColor : 'transparent'}`, cursor: 'pointer',
+                }}>
+                  <div style={{ width: 18, height: 18, borderRadius: '50%', background: level === l ? accentColor : 'var(--bg4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {level === l && <Icon name="check" size={10} color="#fff" strokeWidth={3}/>}
+                  </div>
+                  <span style={{ fontSize: 15, fontWeight: 500 }}>{l}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <Btn onClick={() => { onProfileSave({ name, email, level }); setEditProfile(false); }}>저장</Btn>
+        </div>
+      </Sheet>
+    </div>
+  );
+};
+
+// ══════════════════════════════════════════════════════════════
+// MAIN APP
+// ══════════════════════════════════════════════════════════════
+const App = () => {
+  const [units, setUnits] = useState(() => loadStorage('bgiu_units', SAMPLE_UNITS));
+  const [profile, setProfile] = useState(() => loadStorage('bgiu_profile', DEFAULT_PROFILE));
+  const [settings, setSettings] = useState(() => loadStorage('bgiu_settings', DEFAULT_SETTINGS));
+
+  // Navigation stack
+  const [stack, setStack] = useState([{ screen: 'home', tab: 'home' }]);
+  const [activeTab, setActiveTab] = useState('home');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [toast, setToast] = useState({ msg: '', visible: false });
+  const toastTimeout = useRef(null);
+
+  const isDark = settings.dark;
+  const accentKey = settings.accent;
+  const accent = ACCENTS[accentKey][isDark ? 'dark' : 'light'];
+
+  // Apply theme
+  useEffect(() => {
+    document.documentElement.setAttribute('data-dark', isDark ? 'true' : 'false');
+    document.documentElement.style.setProperty('--accent', accent);
+  }, [isDark, accent]);
+
+  useEffect(() => { saveStorage('bgiu_units', units); }, [units]);
+  useEffect(() => { saveStorage('bgiu_profile', profile); }, [profile]);
+  useEffect(() => { saveStorage('bgiu_settings', settings); }, [settings]);
+
+  const showToast = useCallback(msg => {
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+    setToast({ msg, visible: true });
+    toastTimeout.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 1800);
+  }, []);
+
+  const current = stack[stack.length - 1];
+
+  const push = useCallback((entry) => setStack(s => [...s, entry]), []);
+  const pop = useCallback(() => setStack(s => s.length > 1 ? s.slice(0, -1) : s), []);
+  const goTab = useCallback(tab => {
+    setActiveTab(tab);
+    setStack([{ screen: tab === 'home' ? 'home' : tab === 'review' ? 'reviewGroups' : tab === 'stats' ? 'stats' : 'settings', tab }]);
+  }, []);
+
+  // Unit actions
+  const createUnit = useCallback(data => {
+    const unit = { id: `u_${Date.now()}`, ...data, completed: false, createdAt: Date.now() };
+    setUnits(u => [...u, unit]);
+    showToast('새 유닛을 추가했어요!');
+  }, [showToast]);
+
+  const updateUnit = useCallback((id, data) => {
+    setUnits(u => u.map(x => x.id === id ? { ...x, ...data } : x));
+    showToast('저장됐어요!');
+  }, [showToast]);
+
+  const deleteUnit = useCallback(id => {
+    setUnits(u => u.filter(x => x.id !== id));
+    pop();
+    showToast('유닛을 삭제했어요');
+  }, [pop, showToast]);
+
+  const toggleComplete = useCallback(id => {
+    let msg = '';
+    setUnits(u => u.map(x => {
+      if (x.id !== id) return x;
+      const next = !x.completed;
+      msg = next ? '완료로 표시했어요! 🎉' : '완료 표시를 해제했어요';
+      return { ...x, completed: next };
+    }));
+    showToast(msg);
+  }, [showToast]);
+
+  const handleReviewComplete = useCallback((unitId, pct) => {
+    if (pct >= 70) {
+      setUnits(u => u.map(x => x.id === unitId ? { ...x, completed: true } : x));
+      showToast(`복습 완료! 정답률 ${pct}% 🎉`);
+    } else {
+      showToast(`정답률 ${pct}% — 다시 복습해봐요!`);
+    }
+    pop();
+  }, [pop, showToast]);
+
+  // Render current screen
+  const renderScreen = () => {
+    const { screen, params } = current;
+    switch (screen) {
+      case 'home':
+        return <HomeScreen units={units} profile={profile} accent={accent}
+          onUnitClick={id => push({ screen: 'unitDetail', tab: activeTab, params: { id } })}
+          onAddUnit={() => push({ screen: 'unitEdit', tab: activeTab, params: { id: null } })}
+          onToggleComplete={toggleComplete} showToast={showToast}/>;
+
+      case 'unitDetail': {
+        const unit = units.find(u => u.id === params?.id);
+        return <UnitDetailScreen unit={unit} accent={accent} onBack={pop}
+          onEdit={() => push({ screen: 'unitEdit', tab: activeTab, params: { id: params?.id } })}
+          onDelete={() => deleteUnit(params?.id)}
+          onToggleComplete={() => toggleComplete(params?.id)}
+          onReview={() => push({ screen: 'reviewSession', tab: activeTab, params: { id: params?.id } })}/>;
+      }
+
+      case 'unitEdit': {
+        const unit = params?.id ? units.find(u => u.id === params.id) : null;
+        return <UnitEditScreen unit={unit} onCancel={pop}
+          onSave={data => {
+            if (params?.id) { updateUnit(params.id, data); }
+            else { createUnit(data); }
+            pop();
+          }}/>;
+      }
+
+      case 'reviewGroups':
+        return <ReviewGroupsScreen units={units} accent={accent}
+          onGroupClick={id => push({ screen: 'reviewGroup', tab: 'review', params: { groupId: id } })}/>;
+
+      case 'reviewGroup':
+        return <ReviewGroupDetailScreen groupId={params?.groupId} units={units} accent={accent} onBack={pop}
+          onUnitClick={id => push({ screen: 'unitDetail', tab: activeTab, params: { id } })}
+          onReview={id => push({ screen: 'reviewSession', tab: activeTab, params: { id } })}/>;
+
+      case 'reviewSession': {
+        const unit = units.find(u => u.id === params?.id);
+        if (!unit) return null;
+        return <ReviewSessionScreen unit={unit} accent={accent} onClose={pop}
+          onComplete={pct => handleReviewComplete(params.id, pct)}/>;
+      }
+
+      case 'stats':
+        return <StatsScreen units={units} accent={accent}/>;
+
+      case 'settings':
+        return <SettingsScreen profile={profile} settings={settings} accent={accent}
+          onSettingChange={(k, v) => setSettings(s => ({ ...s, [k]: v }))}
+          onProfileSave={p => { setProfile(p); showToast('프로필을 저장했어요!'); }}
+          showToast={showToast}/>;
+
+      default:
+        return null;
+    }
+  };
+
+  const isModal = ['reviewSession', 'unitEdit'].includes(current.screen);
+  const showNav = !isModal;
+  const showLargeTitle = ['home', 'reviewGroups', 'stats', 'settings'].includes(current.screen);
+
+  const largeTitles = {
+    home: { title: 'BGIU', large: '안녕하세요,', sub: `${profile.name}님, ${units.filter(u=>!u.completed).length}개의 유닛이 남았어요` },
+    reviewGroups: { title: '복습', large: '복습', sub: '20개 단위로 묶어 차근차근 다져요' },
+    stats: { title: '통계', large: '통계', sub: '꾸준함이 가장 큰 무기예요' },
+    settings: { title: '설정', large: '설정', sub: '앱과 데이터를 관리하세요' },
+  };
+
+  const lt = largeTitles[current.screen];
+
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative', maxWidth: 430, margin: '0 auto', background: 'var(--bg1)' }}>
+      {/* Header for base screens */}
+      {showLargeTitle && lt && (
+        <Header
+          title={lt.title}
+          leading={settings.nav === 'sidebar'
+            ? <div onClick={() => setSidebarOpen(true)} className="tap" style={{ cursor: 'pointer', padding: 4 }}><Icon name="menu" size={22}/></div>
+            : null}
+          trailing={<Avatar name={profile.name} size={30} accent={accent}/>}
+          largeTitle={lt.large}
+          largeSubtitle={lt.sub}
+        />
+      )}
+
+      {/* Screen content */}
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        {renderScreen()}
+      </div>
+
+      {/* Navigation */}
+      {showNav && settings.nav === 'tabbar' && <TabBar activeTab={activeTab} onTab={goTab} accent={accent}/>}
+      {settings.nav === 'sidebar' && <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} activeTab={activeTab} onTab={goTab} profile={profile} accent={accent}/>}
+
+      {/* Toast */}
+      <Toast message={toast.msg} visible={toast.visible}/>
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

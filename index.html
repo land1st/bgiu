@@ -96,6 +96,31 @@ let S={
 
 function setState(p){Object.assign(S,typeof p==='function'?p(S):p);render();}
 function saveAll(){sv('bgiu_u',S.units);sv('bgiu_p',S.profile);sv('bgiu_s',S.settings);sv('bgiu_fid',S.driveFileId);}
+function exportData(){
+  const data={units:S.units,profile:S.profile,settings:S.settings,exportedAt:new Date().toISOString(),version:'1.0'};
+  const json=JSON.stringify(data,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const date=new Date().toISOString().slice(0,10);
+  a.href=url;a.download='bgiu_backup_'+date+'.json';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  toast('\ub370\uc774\ud130\ub97c \ub0b4\ubcf4\ub0c8\uc5b4\uc694! ('+S.units.length+'\uac1c \uc720\ub2db)');
+}
+function importData(file){
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.units||!Array.isArray(data.units)){toast('\uc62c\ubc14\ub974\uc9c0 \uc54a\uc740 \ud30c\uc77c\uc785\ub2c8\ub2e4');return;}
+      setState({units:data.units,profile:data.profile||S.profile,settings:data.settings||S.settings});
+      saveAll();applyTheme();
+      toast('\uac00\uc838\uc654\uc5b4\uc694! ('+data.units.length+'\uac1c \uc720\ub2db)');
+    }catch{toast('\ud30c\uc77c \uc77d\uae30 \uc2e4\ud328');}
+  };
+  reader.readAsText(file);
+}
 
 // ===== NAV =====
 function push(e){setState(s=>({stack:[...s.stack,e]}));}
@@ -541,7 +566,7 @@ function scrDetail(uid){
   sc.append(tEl,sEl);
   const sum=d({background:'var(--bg2)',borderRadius:'14px',padding:'16px',marginBottom:'20px',border:'1px solid var(--sep)'});
   sum.innerHTML='<div style="font-size:12px;font-weight:600;color:'+a+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px">\ud575\uc2ec \uc694\uc57d</div>';
-  const st=d({fontSize:'15px',lineHeight:'1.65'});st.textContent=unit.summary;sum.appendChild(st);sc.appendChild(sum);
+  const st=d({fontSize:'15px',lineHeight:'1.65',whiteSpace:'pre-wrap'});st.textContent=unit.summary;sum.appendChild(st);sc.appendChild(sum);
   const exh=d({fontSize:'14px',fontWeight:'600',color:'var(--t2)',letterSpacing:'.4px',textTransform:'uppercase',marginBottom:'10px'});exh.textContent='\uc608\ubb38 ('+unit.examples.length+')';sc.appendChild(exh);
   const exc=d({background:'var(--bg2)',borderRadius:'14px',overflow:'hidden',border:'1px solid var(--sep)',marginBottom:'20px'});
   unit.examples.forEach((ex,i)=>{
@@ -842,6 +867,26 @@ function scrSettings(){
     tap(logoutRow,()=>googleLogout());syncGrp.appendChild(logoutRow);
   }
   inn.appendChild(syncGrp);
+
+  // data section
+  inn.appendChild(secLbl('\ub370\uc774\ud130'));
+  const dg=grp();
+  // Export row
+  const expRow=d({display:'flex',alignItems:'center',gap:'12px',padding:'13px 16px',borderBottom:'1px solid var(--sep)',cursor:'pointer'});
+  const expBox=d({width:'32px',height:'32px',borderRadius:'8px',background:'rgba(52,199,89,.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:'0'});expBox.innerHTML=ico('upload',16,'var(--green)');
+  const expLbl=d({flex:'1',fontSize:'16px',fontWeight:'500'});expLbl.textContent='\ub0b4\ubcf4\ub0b4\uae30 (JSON)';
+  const expChev=d({flexShrink:'0'});expChev.innerHTML=ico('chevR',16,'var(--t3)');
+  expRow.append(expBox,expLbl,expChev);tap(expRow,()=>exportData());dg.appendChild(expRow);
+  // Import row
+  const impRow=d({display:'flex',alignItems:'center',gap:'12px',padding:'13px 16px',cursor:'pointer'});
+  const impBox=d({width:'32px',height:'32px',borderRadius:'8px',background:a+'20',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:'0'});impBox.innerHTML=ico('download',16,a);
+  const impLbl=d({flex:'1',fontSize:'16px',fontWeight:'500'});impLbl.textContent='\uac00\uc838\uc624\uae30 (JSON)';
+  const impChev=d({flexShrink:'0'});impChev.innerHTML=ico('chevR',16,'var(--t3)');
+  // Hidden file input
+  const fileInp=e('input',{display:'none'});fileInp.type='file';fileInp.accept='.json,application/json';
+  fileInp.addEventListener('change',ev=>{if(ev.target.files[0])importData(ev.target.files[0]);});
+  impRow.append(impBox,impLbl,impChev,fileInp);tap(impRow,()=>fileInp.click());dg.appendChild(impRow);
+  inn.appendChild(dg);
 
   // account
   inn.appendChild(secLbl('\uacc4\uc815'));

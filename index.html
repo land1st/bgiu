@@ -520,16 +520,64 @@ function scrHome(){
   w.appendChild(inn);
   const lw=d({padding:'0 16px'});
   const lc=d({background:'var(--bg2)',borderRadius:'14px',overflow:'hidden',border:'1px solid var(--sep)',marginBottom:'16px'});
-  if(!units.length){const em=d({padding:'32px 20px',textAlign:'center',color:'var(--t2)'});em.innerHTML='\ud83d\udcda<br>\uc720\ub2db\uc774 \uc5c6\uc5b4\uc694. \uc0c8 \uc720\ub2db\uc744 \ucd94\uac00\ud574\ubcf4\uc138\uc694!';lc.appendChild(em);}
-  units.forEach((u,i)=>{
-    const row=d({display:'flex',alignItems:'center',gap:'12px',padding:'12px 14px',minHeight:'58px',borderBottom:i<units.length-1?'1px solid var(--sep)':'none'});
-    const bdg=d({width:'32px',height:'32px',borderRadius:'10px',flexShrink:'0',background:u.completed?a:'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center'});
-    bdg.innerHTML=u.completed?ico('check',16,'#fff'):'<span style="font-size:13px;font-weight:700;color:var(--t2)">'+String(i+1).padStart(2,'0')+'</span>';
-    const inf=d({flex:'1',minWidth:'0'});inf.innerHTML='<div style="font-size:16px;font-weight:500;letter-spacing:-0.3px">'+u.title+'</div><div style="font-size:12px;color:var(--t2);margin-top:2px">'+u.subtitle+' \u00b7 \uc608\ubb38 '+u.examples.length+'\uac1c</div>';
-    const ch=d({flexShrink:'0'});ch.innerHTML=ico('chevR',18,'var(--t3)');
-    row.append(bdg,inf,ch);tap(row,()=>push({screen:'unitDetail',params:{id:u.id}}));lc.appendChild(row);
-  });
-  lw.appendChild(lc);w.appendChild(lw);return w;
+  const pgNav=d({display:'flex',gap:'6px',justifyContent:'center',alignItems:'center',padding:'8px 0 4px'});
+  // Pagination
+  const PER_PAGE=10;
+  let curPage=1;
+  const totalPages=()=>Math.max(1,Math.ceil(units.length/PER_PAGE));
+
+  function renderList(){
+    lc.innerHTML='';
+    if(!units.length){
+      const em=d({padding:'32px 20px',textAlign:'center',color:'var(--t2)'});
+      em.innerHTML='\ud83d\udcda<br>\uc720\ub2db\uc774 \uc5c6\uc5b4\uc694. \uc0c8 \uc720\ub2db\uc744 \ucd94\uac00\ud574\ubcf4\uc138\uc694!';
+      lc.appendChild(em);
+    }else{
+      const start=(curPage-1)*PER_PAGE;
+      const pageUnits=units.slice(start,start+PER_PAGE);
+      pageUnits.forEach((u,pi)=>{
+        const i=start+pi;
+        const row=d({display:'flex',alignItems:'center',gap:'12px',padding:'12px 14px',minHeight:'58px',borderBottom:pi<pageUnits.length-1?'1px solid var(--sep)':'none'});
+        const bdg=d({width:'32px',height:'32px',borderRadius:'10px',flexShrink:'0',background:u.completed?a:'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center'});
+        bdg.innerHTML=u.completed?ico('check',16,'#fff'):'<span style="font-size:13px;font-weight:700;color:var(--t2)">'+String(i+1).padStart(2,'0')+'</span>';
+        const inf=d({flex:'1',minWidth:'0'});inf.innerHTML='<div style="font-size:16px;font-weight:500;letter-spacing:-0.3px">'+u.title+'</div><div style="font-size:12px;color:var(--t2);margin-top:2px">'+u.subtitle+' \u00b7 \uc608\ubb38 '+u.examples.length+'\uac1c</div>';
+        const ch=d({flexShrink:'0'});ch.innerHTML=ico('chevR',18,'var(--t3)');
+        row.append(bdg,inf,ch);tap(row,()=>push({screen:'unitDetail',params:{id:u.id}}));lc.appendChild(row);
+      });
+    }
+    // Pagination nav
+    pgNav.innerHTML='';
+    if(totalPages()>1){
+      // Prev button
+      const prev=d({width:'32px',height:'32px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
+        background:'transparent',cursor:curPage===1?'default':'pointer',opacity:curPage===1?'0.3':'1'});
+      prev.innerHTML=ico('chevL',18,'var(--t1)');
+      if(curPage>1)tap(prev,()=>{curPage--;renderList();});
+      pgNav.appendChild(prev);
+      // Page numbers
+      for(let p=1;p<=totalPages();p++){
+        const btn=d({width:'32px',height:'32px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
+          fontSize:'14px',fontWeight:'600',cursor:'pointer',
+          background:p===curPage?a:'transparent',
+          color:p===curPage?'#fff':'var(--t1)',
+          border:p===curPage?'none':'1px solid var(--sep)'});
+        btn.textContent=p;
+        tap(btn,()=>{curPage=p;renderList();});
+        pgNav.appendChild(btn);
+      }
+      // Next button
+      const next=d({width:'32px',height:'32px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
+        background:'transparent',cursor:curPage===totalPages()?'default':'pointer',opacity:curPage===totalPages()?'0.3':'1'});
+      next.innerHTML=ico('chevR',18,'var(--t1)');
+      if(curPage<totalPages())tap(next,()=>{curPage++;renderList();});
+      pgNav.appendChild(next);
+    }
+  }
+
+  renderList();
+  lw.appendChild(lc);
+  lw.appendChild(pgNav);
+  w.appendChild(lw);return w;
 }
 
 function scrDetail(uid){
@@ -729,7 +777,7 @@ function scrSession(uid){
     const pb=d({height:'4px',background:'var(--bg3)'});
     const pf=d({height:'100%',width:Math.round((idx/examples.length)*100)+'%',background:a,transition:'width 0.4s'});pb.appendChild(pf);w.appendChild(pb);
     const sc=d({flex:'1',overflowY:'auto',padding:'24px 16px 90px'});sc.className='sc';
-    const lb=d({fontSize:'12px',fontWeight:'600',color:'var(--t2)',letterSpacing:'.4px',textTransform:'uppercase',marginBottom:'14px'});lb.textContent='\ud55c\uad6d\uc5b4\ub97c \uc601\ubb38\uc73c\ub85c \uc625\uaca8\ubcf4\uc138\uc694';
+    const lb=d({fontSize:'12px',fontWeight:'600',color:'var(--t2)',letterSpacing:'.4px',textTransform:'uppercase',marginBottom:'14px'});lb.textContent='\ud55c\uad6d\uc5b4\ub97c \uc601\ubb38\uc73c\ub85c \uc62e\uaca8\ubcf4\uc138\uc694';
     const qt=d({fontSize:'24px',fontWeight:'700',lineHeight:'1.35',letterSpacing:'-0.5px',marginBottom:'20px'});qt.textContent=ex.ko;
     const ta=e('textarea',{width:'100%',background:'var(--bg2)',border:'1px solid var(--sep)',borderRadius:'14px',padding:'16px',fontSize:'15px',lineHeight:'1.6',marginBottom:'16px',color:'var(--t1)'});
     ta.rows=3;ta.placeholder='\uc5ec\uae30\uc5d0 \uc601\ubb38\uc744 \uc785\ub825\ud558\uc138\uc694';ta.value=inp;ta.addEventListener('input',ev=>inp=ev.target.value);
@@ -974,7 +1022,7 @@ function scrSettings(){
         });llist.appendChild(opt);
       });lw.append(ll,llist);c.appendChild(lw);
       // Save button - clearly visible above sheet bottom
-      const saveBtn=mkBtn('\uc800\uc7a5','primary',()=>{saveProfile({name:pn,email:pe,level:pl,photo:profile.photo});cl();});
+      const saveBtn=mkBtn('\uc800\uc7a5','primary',()=>{setSetting('appName',pan||'BGIU');saveProfile({name:pn,email:pe,level:pl,photo:profile.photo});cl();});
       c.appendChild(saveBtn);
       return c;
     });sh.open();

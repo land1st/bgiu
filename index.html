@@ -171,9 +171,20 @@ function initGIS(){
   _tokenClient=google.accounts.oauth2.initTokenClient({
     client_id:CLIENT_ID,
     scope:SCOPES,
-    callback:(resp)=>{
+    callback:async(resp)=>{
       if(resp.error){toast('\uad6c\uae00 \uc5f0\uacb0 \uc2e4\ud328: '+resp.error);setState({syncStatus:'error'});return;}
       S.gUser={...S.gUser,accessToken:resp.access_token};
+      // Fetch user info directly from Google API (avoids JWT Korean decode issues)
+      try{
+        const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{
+          headers:{Authorization:'Bearer '+resp.access_token}
+        });
+        if(r.ok){
+          const info=await r.json();
+          S.gUser={name:info.name||S.gUser?.name||'',email:info.email||S.gUser?.email||'',photo:info.picture||S.gUser?.photo||null,accessToken:resp.access_token};
+          sv('bgiu_guser',{name:S.gUser.name,email:S.gUser.email,photo:S.gUser.photo});
+        }
+      }catch(e){}
       saveAll();
       toast('\uad6c\uae00 \ub85c\uadf8\uc778 \uc131\uacf5! \ub3d9\uae30\ud654 \uc911...');
       syncFromDrive();

@@ -502,7 +502,14 @@ function scrHome(){
   const inn=d({padding:'16px 16px 0'});
   if(today){
     const c=d({background:a,borderRadius:'20px',padding:'20px',position:'relative',overflow:'hidden',marginBottom:'16px',boxShadow:'0 8px 24px '+a+'60'});
-    c.innerHTML='<div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.15)"></div><div style="position:absolute;bottom:-30px;right:30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.10)"></div><span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(255,255,255,.25);color:#fff;margin-bottom:10px">\uc624\ub298\uc758 \ud559\uc2b5</span><div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:4px">'+today.title+'</div><div style="font-size:16px;color:rgba(255,255,255,.80);margin-bottom:8px">'+today.subtitle+'</div><div style="font-size:15px;color:rgba(255,255,255,.75);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:14px">'+today.summary+'</div><div style="font-size:14px;font-weight:600;color:#fff">\ud559\uc2b5 \uc2dc\uc791\ud558\uae30 \u2192</div>';
+    // Decorative circles
+    c.innerHTML='<div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.15)"></div><div style="position:absolute;bottom:-30px;right:30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.10)"></div>';
+    const _pill=d({display:'inline-flex',padding:'2px 8px',borderRadius:'999px',fontSize:'11px',fontWeight:'600',background:'rgba(255,255,255,.25)',color:'#fff',marginBottom:'10px'});_pill.textContent='오늘의 학습';
+    const _tt=d({fontSize:'22px',fontWeight:'800',color:'#fff',letterSpacing:'-0.5px',marginBottom:'4px'});_tt.textContent=today.title;
+    const _ts=d({fontSize:'16px',color:'rgba(255,255,255,.80)',marginBottom:'8px'});_ts.textContent=today.subtitle;
+    const _td=d({fontSize:'15px',color:'rgba(255,255,255,.75)',lineHeight:'1.5',overflow:'hidden',display:'-webkit-box',WebkitLineClamp:'2',WebkitBoxOrient:'vertical',marginBottom:'14px'});_td.textContent=today.summary;
+    const _cta=d({fontSize:'14px',fontWeight:'600',color:'#fff'});_cta.textContent='학습 시작하기 →';
+    c.append(_pill,_tt,_ts,_td,_cta);
     tap(c,()=>push({screen:'unitDetail',params:{id:today.id}}));inn.appendChild(c);
   }else{
     const c=d({background:a,borderRadius:'20px',padding:'24px 20px',textAlign:'center',marginBottom:'16px'});
@@ -541,7 +548,9 @@ function scrHome(){
         const row=d({display:'flex',alignItems:'center',gap:'12px',padding:'12px 14px',minHeight:'58px',borderBottom:pi<pageUnits.length-1?'1px solid var(--sep)':'none'});
         const bdg=d({width:'32px',height:'32px',borderRadius:'10px',flexShrink:'0',background:u.completed?a:'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center'});
         bdg.innerHTML=u.completed?ico('check',16,'#fff'):'<span style="font-size:13px;font-weight:700;color:var(--t2)">'+String(i+1).padStart(2,'0')+'</span>';
-        const inf=d({flex:'1',minWidth:'0'});inf.innerHTML='<div style="font-size:16px;font-weight:500;letter-spacing:-0.3px">'+u.title+'</div><div style="font-size:12px;color:var(--t2);margin-top:2px">'+u.subtitle+' \u00b7 \uc608\ubb38 '+u.examples.length+'\uac1c</div>';
+        const inf=d({flex:'1',minWidth:'0'});const _it=d({fontSize:'16px',fontWeight:'500',letterSpacing:'-0.3px'});_it.textContent=u.title;
+        const _is=d({fontSize:'12px',color:'var(--t2)',marginTop:'2px'});_is.textContent=u.subtitle+' · 예문 '+u.examples.length+'개';
+        inf.append(_it,_is);
         const ch=d({flexShrink:'0'});ch.innerHTML=ico('chevR',18,'var(--t3)');
         row.append(bdg,inf,ch);tap(row,()=>push({screen:'unitDetail',params:{id:u.id}}));lc.appendChild(row);
       });
@@ -764,7 +773,9 @@ function scrGroupDetail(gid){
     const row=d({display:'flex',alignItems:'center',gap:'12px',padding:'12px 14px',borderBottom:i<sl.length-1?'1px solid var(--sep)':'none'});
     const bdg=d({width:'28px',height:'28px',borderRadius:'9px',background:u.completed?'var(--green)':'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:'0'});
     bdg.innerHTML=u.completed?ico('check',14,'#fff'):'<span style="font-size:11px;font-weight:700;color:var(--t2)">'+String(start+i+1).padStart(2,'0')+'</span>';
-    const inf=d({flex:'1',cursor:'pointer'});inf.innerHTML='<div style="font-size:15px;font-weight:500">'+u.title+'</div><div style="font-size:12px;color:var(--t2)">'+u.subtitle+' \u00b7 \uc608\ubb38 '+u.examples.length+'\uac1c</div>';
+    const inf=d({flex:'1',cursor:'pointer'});const _gt=d({fontSize:'15px',fontWeight:'500'});_gt.textContent=u.title;
+        const _gs=d({fontSize:'12px',color:'var(--t2)'});_gs.textContent=u.subtitle+' · 예문 '+u.examples.length+'개';
+        inf.append(_gt,_gs);
     tap(inf,()=>push({screen:'unitDetail',params:{id:u.id}}));
     const rb=d({padding:'6px 12px',borderRadius:'999px',background:a+'22',color:a,fontSize:'12px',fontWeight:'600',flexShrink:'0'});rb.textContent='\ubcf5\uc2b5';
     tap(rb,()=>push({screen:'reviewSession',params:{id:u.id}}));row.append(bdg,inf,rb);lc.appendChild(row);
@@ -887,7 +898,9 @@ function scrSettings(){
   const pc=d({background:'var(--bg2)',borderRadius:'16px',padding:'16px 18px',border:'1px solid var(--sep)',marginBottom:'20px',display:'flex',alignItems:'center',gap:'14px'});
   const photoSrc=S.gUser?.photo||profile.photo||null;
   pc.appendChild(mkAvatar(profile.name,56,photoSrc));
-  const pi=d({flex:'1'});pi.innerHTML='<div style="font-size:17px;font-weight:700">'+profile.name+'</div><div style="font-size:13px;color:var(--t2)">'+profile.email+'</div>';
+  const pi=d({flex:'1'});const _pn=d({fontSize:'17px',fontWeight:'700'});_pn.textContent=profile.name;
+  const _pe=d({fontSize:'13px',color:'var(--t2)'});_pe.textContent=profile.email;
+  pi.append(_pn,_pe);
   pi.appendChild(mkPill(profile.level,a,a+'20'));
   const ei=d({color:'var(--t2)',cursor:'pointer',padding:'4px'});ei.innerHTML=ico('edit',18,'var(--t2)');tap(ei,()=>openProfEdit());
   pc.append(pi,ei);inn.appendChild(pc);
@@ -1109,7 +1122,9 @@ function buildSidebar(){
   const pr=d({display:'flex',alignItems:'center',gap:'12px',marginBottom:'32px'});
   const photo=S.gUser?.photo||profile.photo||null;
   pr.appendChild(mkAvatar(profile.name,56,photo));
-  const pi=d({});pi.innerHTML='<div style="font-size:16px;font-weight:700">'+profile.name+'</div><div style="font-size:13px;color:var(--t2)">'+profile.email+'</div>';
+  const pi=d({});const _sn=d({fontSize:'16px',fontWeight:'700'});_sn.textContent=profile.name;
+  const _se=d({fontSize:'13px',color:'var(--t2)'});_se.textContent=profile.email;
+  pi.append(_sn,_se);
   pi.appendChild(mkPill(profile.level,a,a+'20'));pr.appendChild(pi);sb.appendChild(pr);
   const nav=d({flex:'1',display:'flex',flexDirection:'column',gap:'4px'});
   [['home','home','\uc720\ub2db'],['review','review','\ubcf5\uc2b5'],['stats','barchart','\ud1b5\uacc4'],['settings','cog','\uc124\uc815']].forEach(([tab,ic,lbl])=>{

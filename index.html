@@ -173,15 +173,18 @@ function initGIS(){
     scope:SCOPES,
     callback:async(resp)=>{
       if(resp.error){toast('\uad6c\uae00 \uc5f0\uacb0 \uc2e4\ud328: '+resp.error);setState({syncStatus:'error'});return;}
-      S.gUser={...S.gUser,accessToken:resp.access_token};
-      // Fetch user info directly from Google API (avoids JWT Korean decode issues)
+      // Store token with expiry (expires_in is usually 3600 seconds)
+      const expiresAt=Date.now()+(((resp.expires_in||3600)-60)*1000);
+      S.gUser={...S.gUser,accessToken:resp.access_token,expiresAt};
+      // Fetch user info directly from Google API
       try{
         const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{
           headers:{Authorization:'Bearer '+resp.access_token}
         });
         if(r.ok){
           const info=await r.json();
-          S.gUser={name:info.name||S.gUser?.name||'',email:info.email||S.gUser?.email||'',photo:info.picture||S.gUser?.photo||null,accessToken:resp.access_token};
+          S.gUser={name:info.name||S.gUser?.name||'',email:info.email||S.gUser?.email||'',
+            photo:info.picture||S.gUser?.photo||null,accessToken:resp.access_token,expiresAt};
           sv('bgiu_guser',{name:S.gUser.name,email:S.gUser.email,photo:S.gUser.photo});
         }
       }catch(e){}
@@ -238,10 +241,14 @@ function googleLoginDirect(){
   google.accounts.id.prompt();
 }
 
-function requestDriveToken(){
+function isTokenValid(){
+  return S.gUser?.accessToken && S.gUser?.expiresAt && Date.now()<S.gUser.expiresAt;
+}
+function requestDriveToken(silent=false){
   if(!_tokenClient)initGIS();
   if(!_tokenClient){toast('Google SDK \uc900\ube44 \uc911...');return;}
-  _tokenClient.requestAccessToken({prompt:'consent'});
+  // silent=true: no consent prompt (silent refresh)
+  _tokenClient.requestAccessToken({prompt:silent?'':'consent'});
 }
 
 function googleLogout(){
@@ -321,7 +328,13 @@ async function writeDriveFile(data){
 }
 
 async function syncToDrive(){
-  if(!S.gUser?.accessToken){toast('\uba3c\uc800 \uad6c\uae00 \ub85c\uadf8\uc778\uc744 \ud574\uc8fc\uc138\uc694');return;}
+  if(!S.gUser){toast('\uba3c\uc800 \uad6c\uae00 \ub85c\uadf8\uc778\uc744 \ud574\uc8fc\uc138\uc694');return;}
+  // Auto refresh if token expired
+  if(!isTokenValid()){
+    toast('\uc138\uc158 \uc7ac\uc5f0\uacb0 \uc911...');
+    requestDriveToken(true);
+    return; // callback will re-trigger sync
+  }
   setState({syncStatus:'syncing'});
   try{
     const data={units:S.units,profile:S.profile,settings:S.settings,syncedAt:Date.now()};
@@ -332,7 +345,8 @@ async function syncToDrive(){
 }
 
 async function syncFromDrive(){
-  if(!S.gUser?.accessToken)return;
+  if(!S.gUser)return;
+  if(!isTokenValid()){requestDriveToken(true);return;}
   setState({syncStatus:'syncing'});
   try{
     let fileId=S.driveFileId;
@@ -353,9 +367,12 @@ async function syncFromDrive(){
 
 let _autoSyncTimer=null;
 function autoSync(){
-  if(!S.gUser?.accessToken)return;
+  if(!S.gUser)return;
   if(_autoSyncTimer)clearTimeout(_autoSyncTimer);
-  _autoSyncTimer=setTimeout(()=>syncToDrive(),2000);
+  _autoSyncTimer=setTimeout(()=>{
+    if(isTokenValid())syncToDrive();
+    else requestDriveToken(true);
+  },2000);
 }
 
 // Restore google user from localStorage
@@ -962,12 +979,16 @@ function scrSettings(){
     const syncBtn=d({flex:'1',display:'flex',alignItems:'center',gap:'10px',padding:'13px 16px',cursor:'pointer',borderRight:'1px solid var(--sep)'});
     syncBtn.innerHTML=ico('cloud',18,a)+'<span style="font-size:14px;font-weight:600;color:'+a+'">\uc9c0\uae08 \ub3d9\uae30\ud654</span>';
     tap(syncBtn,()=>{
-      if(!S.gUser?.accessToken){requestDriveToken();}else{syncToDrive();}
+      if(!S.gUser){requestDriveToken();}
+      else if(!isTokenValid()){requestDriveToken(true);}
+      else{syncToDrive();}
     });
     const pullBtn=d({flex:'1',display:'flex',alignItems:'center',gap:'10px',padding:'13px 16px',cursor:'pointer'});
     pullBtn.innerHTML=ico('download',18,'var(--t2)')+'<span style="font-size:14px;font-weight:600;color:var(--t2)">\uac00\uc838\uc624\uae30</span>';
     tap(pullBtn,()=>{
-      if(!S.gUser?.accessToken){requestDriveToken();}else{syncFromDrive();}
+      if(!S.gUser){requestDriveToken();}
+      else if(!isTokenValid()){requestDriveToken(true);}
+      else{syncFromDrive();}
     });
     syncRow.append(syncBtn,pullBtn);syncGrp.appendChild(syncRow);
 

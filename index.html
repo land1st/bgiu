@@ -33,7 +33,7 @@ button{border:none;background:none;font-family:inherit;cursor:pointer}
 <script>
 const CLIENT_ID='368952825871-d1fkqher8dbahab0nsmh13t2btbqs3nd.apps.googleusercontent.com';
 const DRIVE_FILE_NAME='bgiu_data.json';
-const SCOPES='https://www.googleapis.com/auth/drive.appdata';
+const SCOPES='https://www.googleapis.com/auth/drive.file';
 
 // ===== ACCENTS =====
 const AC={
@@ -230,7 +230,7 @@ function googleLoginDirect(){
 function requestDriveToken(){
   if(!_tokenClient)initGIS();
   if(!_tokenClient){toast('Google SDK \uc900\ube44 \uc911...');return;}
-  _tokenClient.requestAccessToken({prompt: S.gUser?'':'consent'});
+  _tokenClient.requestAccessToken({prompt:'consent'});
 }
 
 function googleLogout(){
@@ -244,8 +244,13 @@ function googleLogout(){
 }
 
 function parseJwt(token){
-  try{const b=token.split('.')[1];return JSON.parse(atob(b.replace(/-/g,'+').replace(/_/g,'/')));}
-  catch{return {};}
+  try{
+    const b=token.split('.')[1];
+    const raw=atob(b.replace(/-/g,'+').replace(/_/g,'/'));
+    // Properly decode UTF-8 (handles Korean and other non-ASCII)
+    const utf8=decodeURIComponent(raw.split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    return JSON.parse(utf8);
+  }catch{return {};}
 }
 
 // Drive API helpers
@@ -267,7 +272,7 @@ async function driveRequest(path,method='GET',body=null,contentType='application
 }
 
 async function findDriveFile(){
-  const res=await driveRequest("drive/v3/files?spaces=appDataFolder&q=name%3D'"+DRIVE_FILE_NAME+"'&fields=files(id,name,modifiedTime)");
+  const res=await driveRequest("drive/v3/files?q=name%3D'"+DRIVE_FILE_NAME+"'+and+trashed%3Dfalse&fields=files(id,name,modifiedTime)&orderBy=modifiedTime+desc");
   if(res&&res.files&&res.files.length>0)return res.files[0];
   return null;
 }
@@ -291,8 +296,8 @@ async function writeDriveFile(data){
     });
     return r.ok;
   }else{
-    // create in appDataFolder
-    const meta={name:DRIVE_FILE_NAME,parents:['appDataFolder']};
+    // create new file in Drive
+    const meta={name:DRIVE_FILE_NAME}; // saved to Drive root
     const form=new FormData();
     form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
     form.append('file',blob);

@@ -908,7 +908,9 @@ function scrSettings(){
     const userRow=d({display:'flex',alignItems:'center',gap:'12px',padding:'14px 16px',borderBottom:'1px solid var(--sep)'});
     userRow.appendChild(mkAvatar(S.gUser.name,36,S.gUser.photo));
     const ui=d({flex:'1'});
-    ui.innerHTML='<div style="font-size:15px;font-weight:600">'+S.gUser.name+'</div><div style="font-size:12px;color:var(--t2)">'+S.gUser.email+'</div>';
+    const _un=d({fontSize:'15px',fontWeight:'600'});_un.textContent=S.gUser.name;
+    const _ue=d({fontSize:'12px',color:'var(--t2)'});_ue.textContent=S.gUser.email;
+    ui.append(_un,_ue);
     // Sync status dot
     const statusColors={idle:'var(--bg4)',syncing:a,success:'var(--green)',error:'var(--red)'};
     const statusLabels={idle:'\ub300\uae30 \uc911',syncing:'\ub3d9\uae30\ud654 \uc911...',success:'\ub3d9\uae30\ud654 \uc644\ub8cc',error:'\ub3d9\uae30\ud654 \uc2e4\ud328'};

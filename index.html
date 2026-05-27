@@ -83,6 +83,7 @@ let S={
   units:ld('bgiu_u',SAMP),
   profile:ld('bgiu_p',{name:'\uae40\ubbfc\uc900',email:'minjun@example.com',level:'Pre-Intermediate',photo:null}),
   settings:ld('bgiu_s',{nav:'tabbar',dark:false,accent:'mint',appName:'BGIU'}),
+  fontSize:ld('bgiu_fs',1),
   stack:[{screen:'home'}],
   activeTab:'home',
   sidebarOpen:false,
@@ -605,7 +606,36 @@ function scrDetail(uid){
       c.append(er,dr);return c;
     });sh.open();
   });
-  const{bar}=mkHdr('\uc720\ub2db',backEl,moreEl);w.appendChild(bar);
+  // Font size controls
+  const FS_SIZES=[[13,11],[15,13],[17,15]]; // [en,ko] per level
+  const fsWrap=d({display:'flex',alignItems:'center',gap:'2px'});
+  const fsBtns=[];
+  const fsLabels=['A-','A','A+'];
+  fsLabels.forEach((lbl,fi)=>{
+    const btn=d({padding:'4px 7px',borderRadius:'8px',fontSize:fi===0?'12px':fi===1?'14px':'16px',
+      fontWeight:'600',cursor:'pointer',
+      color:S.fontSize===fi?a:'var(--t2)',
+      background:S.fontSize===fi?a+'18':'transparent',
+      transition:'all 0.15s'});
+    btn.textContent=lbl;
+    tap(btn,()=>{
+      S.fontSize=fi;sv('bgiu_fs',fi);
+      // update text sizes live
+      const[enSz,koSz]=FS_SIZES[fi];
+      sumText.style.fontSize=enSz+'px';
+      document.querySelectorAll('.ex-en').forEach(el=>el.style.fontSize=enSz+'px');
+      document.querySelectorAll('.ex-ko').forEach(el=>el.style.fontSize=koSz+'px');
+      // update button styles
+      fsBtns.forEach((b,bi)=>{
+        b.style.color=bi===fi?a:'var(--t2)';
+        b.style.background=bi===fi?a+'18':'transparent';
+      });
+    });
+    fsBtns.push(btn);fsWrap.appendChild(btn);
+  });
+  const trailEl=d({display:'flex',alignItems:'center',gap:'4px'});
+  trailEl.append(fsWrap,moreEl);
+  const{bar}=mkHdr('\uc720\ub2db',backEl,trailEl);w.appendChild(bar);
   const sc=d({flex:'1',overflowY:'auto',padding:'20px 16px 100px'});sc.className='sc';
   const bg=d({display:'flex',gap:'6px',marginBottom:'12px'});
   bg.appendChild(mkPill(unit.completed?'\uc644\ub8cc':'\uc9c4\ud589 \uc911',unit.completed?'var(--green)':a,unit.completed?'rgba(52,199,89,.15)':a+'20'));
@@ -615,13 +645,13 @@ function scrDetail(uid){
   sc.append(tEl,sEl);
   const sum=d({background:'var(--bg2)',borderRadius:'14px',padding:'16px',marginBottom:'20px',border:'1px solid var(--sep)'});
   sum.innerHTML='<div style="font-size:12px;font-weight:600;color:'+a+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px">\ud575\uc2ec \uc694\uc57d</div>';
-  const st=d({fontSize:'15px',lineHeight:'1.65',whiteSpace:'pre-wrap'});st.textContent=unit.summary;sum.appendChild(st);sc.appendChild(sum);
+  const sumText=d({fontSize:(['13px','15px','17px'])[S.fontSize],lineHeight:'1.65',whiteSpace:'pre-wrap'});sumText.textContent=unit.summary;sum.appendChild(sumText);sc.appendChild(sum);
   const exh=d({fontSize:'14px',fontWeight:'600',color:'var(--t2)',letterSpacing:'.4px',textTransform:'uppercase',marginBottom:'10px'});exh.textContent='\uc608\ubb38 ('+unit.examples.length+')';sc.appendChild(exh);
   const exc=d({background:'var(--bg2)',borderRadius:'14px',overflow:'hidden',border:'1px solid var(--sep)',marginBottom:'20px'});
   unit.examples.forEach((ex,i)=>{
     const row=d({display:'flex',gap:'12px',padding:'14px 16px',borderBottom:i<unit.examples.length-1?'1px solid var(--sep)':'none'});
     const num=d({fontSize:'13px',fontWeight:'700',color:a,minWidth:'22px'});num.textContent=String(i+1).padStart(2,'0');
-    const inf=d({});inf.innerHTML='<div style="font-size:16px;font-weight:500;line-height:1.4">'+ex.en+'</div><div style="font-size:13px;color:var(--t2);margin-top:3px">'+ex.ko+'</div>';
+    const inf=d({});inf.innerHTML='<div class="ex-en" style="font-size:'+(['13px','16px','18px'])[S.fontSize]+';font-weight:500;line-height:1.4">'+ex.en+'</div><div class="ex-ko" style="font-size:'+(['11px','13px','15px'])[S.fontSize]+';color:var(--t2);margin-top:3px">'+ex.ko+'</div>';
     row.append(num,inf);exc.appendChild(row);
   });sc.appendChild(exc);
   const ct=d({display:'flex',alignItems:'center',gap:'14px',padding:'14px 16px',borderRadius:'14px',marginBottom:'16px',
@@ -935,6 +965,28 @@ function scrSettings(){
   const fileInp=e('input',{display:'none'});fileInp.type='file';fileInp.accept='.json,application/json';
   fileInp.addEventListener('change',ev=>{if(ev.target.files[0])importData(ev.target.files[0]);});
   impRow.append(impBox,impLbl,impChev,fileInp);tap(impRow,()=>fileInp.click());dg.appendChild(impRow);
+  // Reset row
+  const rstRow=d({display:'flex',alignItems:'center',gap:'12px',padding:'13px 16px',borderBottom:'none',cursor:'pointer',borderTop:'1px solid var(--sep)'});
+  const rstBox=d({width:'32px',height:'32px',borderRadius:'8px',background:'rgba(255,59,48,.12)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:'0'});rstBox.innerHTML=ico('trash',16,'var(--red)');
+  const rstLbl=d({flex:'1',fontSize:'16px',fontWeight:'500',color:'var(--red)'});rstLbl.textContent='\ub370\uc774\ud130 \ucd08\uae30\ud654';
+  const rstChev=d({flexShrink:'0'});rstChev.innerHTML=ico('chevR',16,'var(--red)');
+  rstRow.append(rstBox,rstLbl,rstChev);
+  tap(rstRow,()=>{
+    const sh=mkSheet('\ub370\uc774\ud130 \ucd08\uae30\ud654',cl=>{
+      const c=d({padding:'8px 16px 24px'});
+      const warn=d({background:'rgba(255,59,48,.08)',borderRadius:'12px',padding:'14px 16px',marginBottom:'20px'});
+      warn.innerHTML='<div style="font-size:15px;font-weight:700;color:var(--red);margin-bottom:6px">\uc815\ub9d0 \ucd08\uae30\ud654\ud558\uc2dc갬어요?</div><div style="font-size:13px;color:var(--t2);line-height:1.6">\ubaa8\ub4e0 \uc720\ub2db \ub370\uc774\ud130\uac00 \uc0ad\uc81c\ub429\ub2c8\ub2e4.<br>\uc774 \uc791\uc5c5\uc740 \ub418\ub3cc\ub9b4 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.</div>';
+      c.appendChild(warn);
+      c.appendChild(mkBtn('\ucd08\uae30\ud654','red-solid',()=>{
+        setState({units:JSON.parse(JSON.stringify(SAMP)),profile:{name:'\uae40\ubbfc\uc900',email:'minjun@example.com',level:'Pre-Intermediate',photo:null}});
+        saveAll();cl();toast('\ub370\uc774\ud130\ub97c \ucd08\uae30\ud654\ud588\uc5b4\uc694');
+      }));
+      const sp=d({height:'8px'});c.appendChild(sp);
+      c.appendChild(mkBtn('\ucde8\uc18c','gray',cl));
+      return c;
+    });sh.open();
+  });
+  dg.appendChild(rstRow);
   inn.appendChild(dg);
 
   // account

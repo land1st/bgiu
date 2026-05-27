@@ -253,9 +253,10 @@ function requestDriveToken(silent=false){
 
 function googleLogout(){
   if(S.gUser&&window.google){
-    google.accounts.id.revoke(S.gUser.email,()=>{});
-    if(S.gUser.accessToken)google.accounts.oauth2.revoke(S.gUser.accessToken,()=>{});
+    try{google.accounts.id.revoke(S.gUser.email,()=>{});}catch(e){}
+    try{if(S.gUser.accessToken)google.accounts.oauth2.revoke(S.gUser.accessToken,()=>{});}catch(e){}
   }
+  S.driveFileId=null;sv('bgiu_fid',null);
   setState({gUser:null,syncStatus:'idle'});
   sv('bgiu_guser',null);
   toast('\uad6c\uae00 \ub85c\uadf8\uc544\uc6c3\ud588\uc5b4\uc694');
@@ -304,26 +305,37 @@ async function readDriveFile(fileId){
   try{return await r.json();}catch{return null;}
 }
 
+async function createDriveFile(jsonStr){
+  const blob=new Blob([jsonStr],{type:'application/json'});
+  const meta={name:DRIVE_FILE_NAME};
+  const form=new FormData();
+  form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
+  form.append('file',blob);
+  const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{
+    method:'POST',headers:{Authorization:'Bearer '+S.gUser.accessToken},body:form
+  });
+  if(r.ok){const j=await r.json();S.driveFileId=j.id;sv('bgiu_fid',j.id);return true;}
+  return false;
+}
 async function writeDriveFile(data){
   const jsonStr=JSON.stringify(data);
-  const blob=new Blob([jsonStr],{type:'application/json'});
   if(S.driveFileId){
-    // update
+    // Try update existing file
     const r=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+S.driveFileId+'?uploadType=media',{
       method:'PATCH',headers:{Authorization:'Bearer '+S.gUser.accessToken,'Content-Type':'application/json'},body:jsonStr
     });
-    return r.ok;
-  }else{
-    // create new file in Drive
-    const meta={name:DRIVE_FILE_NAME}; // saved to Drive root
-    const form=new FormData();
-    form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
-    form.append('file',blob);
-    const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{
-      method:'POST',headers:{Authorization:'Bearer '+S.gUser.accessToken},body:form
-    });
-    if(r.ok){const j=await r.json();setState({driveFileId:j.id});sv('bgiu_fid',j.id);return true;}
+    if(r.ok)return true;
+    // 404 or other error: file not found, clear id and create new
+    if(r.status===404||r.status===403){
+      S.driveFileId=null;sv('bgiu_fid',null);
+      return await createDriveFile(jsonStr);
+    }
     return false;
+  }else{
+    // Search for existing file first
+    const existing=await findDriveFile();
+    if(existing){S.driveFileId=existing.id;sv('bgiu_fid',existing.id);return await writeDriveFile(data);}
+    return await createDriveFile(jsonStr);
   }
 }
 

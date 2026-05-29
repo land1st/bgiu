@@ -717,12 +717,28 @@ function scrDetail(uid){
   ct.append(ck,cl);if(!unit.completed){const ht=d({fontSize:'12px',color:'var(--t3)'});ht.textContent='\ub208\ub7ec\uc11c \uc644\ub8cc';ct.appendChild(ht);}
   tap(ct,()=>toggleComplete(uid));sc.appendChild(ct);
   sc.appendChild(mkBtn('\uc774 \uc720\ub2db \ubcf5\uc2b5\ud558\uae30','primary',()=>push({screen:'reviewSession',params:{id:uid}}),'shuffle'));
+  if(unit.videoUrl&&unit.videoUrl.trim()){
+    const ytBtn=d({display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',
+      width:'100%',padding:'14px 20px',borderRadius:'13px',background:'#FF0000',
+      cursor:'pointer',marginTop:'10px',transition:'transform 0.12s'});
+    const ytIco=d({flexShrink:'0'});
+    ytIco.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8z" fill="#fff"/><polygon points="9.6,15.6 15.8,12 9.6,8.4" fill="#FF0000"/></svg>';
+    const ytLbl=d({fontSize:'16px',fontWeight:'600',color:'#fff',letterSpacing:'-0.3px'});
+    ytLbl.textContent='\uad00\ub828 \uc601\uc0c1 \ubcf4\uae30';
+    const ytArr=d({flexShrink:'0'});
+    ytArr.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7,7 17,7 17,17"/></svg>';
+    ytBtn.append(ytIco,ytLbl,ytArr);
+    ['mousedown','touchstart'].forEach(ev=>ytBtn.addEventListener(ev,()=>ytBtn.style.transform='scale(0.97)',{passive:true}));
+    ['mouseup','mouseleave','touchend'].forEach(ev=>ytBtn.addEventListener(ev,()=>ytBtn.style.transform=''));
+    ytBtn.addEventListener('click',()=>window.open(unit.videoUrl,'_blank'));
+    sc.appendChild(ytBtn);
+  }
   w.appendChild(sc);return w;
 }
 
 function scrEdit(uid){
   const a=ac();const ex=uid?S.units.find(u=>u.id===uid):null;
-  let fd={title:ex?.title||'',subtitle:ex?.subtitle||'',summary:ex?.summary||'',examples:ex?JSON.parse(JSON.stringify(ex.examples)):[{en:'',ko:''}]};
+  let fd={title:ex?.title||'',subtitle:ex?.subtitle||'',summary:ex?.summary||'',examples:ex?JSON.parse(JSON.stringify(ex.examples)):[{en:'',ko:''}],videoUrl:ex?.videoUrl||''};
   const w=d({display:'flex',flexDirection:'column',height:'100%'});
   const cancelEl=d({fontSize:'16px',color:a,cursor:'pointer',minWidth:'60px'});cancelEl.textContent='\ucde8\uc18c';tap(cancelEl,pop);
   const saveEl=d({fontSize:'16px',fontWeight:'600',cursor:'pointer',minWidth:'60px',textAlign:'right',color:'var(--t3)'});saveEl.textContent='\uc800\uc7a5';
@@ -730,7 +746,7 @@ function scrEdit(uid){
   tap(saveEl,()=>{
     if(!fd.title.trim()||!fd.summary.trim())return;
     const clean=fd.examples.filter(ex=>ex.en.trim()||ex.ko.trim());
-    const data={title:fd.title.trim(),subtitle:fd.subtitle.trim(),summary:fd.summary.trim(),examples:clean};
+    const data={title:fd.title.trim(),subtitle:fd.subtitle.trim(),summary:fd.summary.trim(),examples:clean,videoUrl:fd.videoUrl.trim()};
     if(uid)updateUnit(uid,data);else createUnit(data);pop();
   });
   const{bar}=mkHdr(uid?'\uc720\ub2db \ud3b8\uc9d1':'\uc0c8 \uc720\ub2db',cancelEl,saveEl);w.appendChild(bar);
@@ -742,7 +758,7 @@ function scrEdit(uid){
     const row=d({display:'flex',alignItems:'center',gap:'12px',padding:'0 16px',borderBottom:'1px solid var(--sep)'});
     const lb=d({fontSize:'14px',color:'var(--t2)',minWidth:'52px',lineHeight:'48px'});lb.innerHTML=lbl+(req?'<span style="color:var(--ac)"> *</span>':'');
     const inp=e('input',{flex:'1',fontSize:'15px',padding:'14px 0',background:'none',color:'var(--t1)'});
-    inp.placeholder=ph;inp.value=fd[key];inp.addEventListener('input',ev=>{fd[key]=ev.target.value;chkSave();});
+    inp.placeholder=ph;inp.value=fd[key]||'';inp.addEventListener('input',ev=>{fd[key]=ev.target.value;chkSave();});
     row.append(lb,inp);bc.appendChild(row);
   });
   const sr=d({padding:'12px 16px'});

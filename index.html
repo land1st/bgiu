@@ -754,7 +754,7 @@ function scrEdit(uid){
   function secLbl(t){const s=d({fontSize:'13px',fontWeight:'500',color:'var(--t2)',letterSpacing:'.4px',textTransform:'uppercase',padding:'0 4px 6px'});s.textContent=t;return s;}
   sc.appendChild(secLbl('\uae30\ubcf8 \uc815\ubcf4'));
   const bc=d({background:'var(--bg2)',borderRadius:'14px',overflow:'hidden',border:'1px solid var(--sep)',marginBottom:'20px'});
-  [['\\uc81c\\ubaa9','title','Present Simple',true],['\\ubd80\\uc81c\\ubaa9','subtitle','\\ud604\\uc7ac \\ub2e8\\uc21c\\uc2dc\\uc81c',false],['관련 영상 URL','videoUrl','https://youtube.com/watch?v=...',false]].forEach(([lbl,key,ph,req])=>{
+  [['제목','title','Present Simple',true],['부제목','subtitle','현재 단순시제',false],['관련 영상 URL','videoUrl','https://youtube.com/watch?v=...',false]].forEach(([lbl,key,ph,req])=>{
     const isLast=(key==='videoUrl');const row=d({display:'flex',alignItems:'center',gap:'12px',padding:'0 16px',borderBottom:isLast?'none':'1px solid var(--sep)'});
     const lb=d({fontSize:'14px',color:'var(--t2)',minWidth:'52px',lineHeight:'48px'});lb.innerHTML=lbl+(req?'<span style="color:var(--ac)"> *</span>':'');
     const inp=e('input',{flex:'1',fontSize:'15px',padding:'14px 0',background:'none',color:'var(--t1)'});
